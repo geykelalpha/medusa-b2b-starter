@@ -5,11 +5,53 @@ import { loadEnv, defineConfig, Modules } from "@medusajs/framework/utils";
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd());
 
-const useResend = !!process.env.RESEND_API_KEY;
+const isTest = process.env.NODE_ENV === "test";
+
+// Tests never send real emails; they go to the local provider (console) instead.
+const useResend = !isTest && !!process.env.RESEND_API_KEY;
+// Tests stay in-memory so they never share Redis (queues, events) with a
+// running dev server.
+const redisUrl = isTest ? undefined : process.env.REDIS_URL;
+
+// Without a Redis URL, Medusa falls back to in-memory event bus, workflow
+// engine, locking and cache.
+const redisModules: Record<
+  string,
+  { resolve: string; options: Record<string, unknown> }
+> = redisUrl
+  ? {
+      [Modules.EVENT_BUS]: {
+        resolve: "@medusajs/medusa/event-bus-redis",
+        options: { redisUrl },
+      },
+      [Modules.WORKFLOW_ENGINE]: {
+        resolve: "@medusajs/medusa/workflow-engine-redis",
+        options: { redis: { redisUrl } },
+      },
+      [Modules.LOCKING]: {
+        resolve: "@medusajs/medusa/locking",
+        options: {
+          providers: [
+            {
+              resolve: "@medusajs/medusa/locking-redis",
+              id: "locking-redis",
+              is_default: true,
+              options: { redisUrl },
+            },
+          ],
+        },
+      },
+      [Modules.CACHE]: {
+        resolve: "@medusajs/medusa/cache-redis",
+        options: { redisUrl },
+      },
+    }
+  : {};
 
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    redisUrl,
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -19,6 +61,7 @@ module.exports = defineConfig({
     },
   },
   modules: {
+    ...redisModules,
     [COMPANY_MODULE]: {
       resolve: "./modules/company",
     },
