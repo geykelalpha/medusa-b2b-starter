@@ -420,10 +420,12 @@ export default async function initial_data_seed({
               manage_inventory: false,
               prices: [
                 {
+                  // eslint-disable-next-line @medusajs/prices-in-major-units -- already in major units (1,299 laptop)
                   amount: 1299,
                   currency_code: "eur",
                 },
                 {
+                  // eslint-disable-next-line @medusajs/prices-in-major-units -- already in major units (1,299 laptop)
                   amount: 1299,
                   currency_code: "usd",
                 },
@@ -439,10 +441,12 @@ export default async function initial_data_seed({
               manage_inventory: false,
               prices: [
                 {
+                  // eslint-disable-next-line @medusajs/prices-in-major-units -- already in major units (1,259 laptop)
                   amount: 1259,
                   currency_code: "eur",
                 },
                 {
+                  // eslint-disable-next-line @medusajs/prices-in-major-units -- already in major units (1,259 laptop)
                   amount: 1259,
                   currency_code: "usd",
                 },
