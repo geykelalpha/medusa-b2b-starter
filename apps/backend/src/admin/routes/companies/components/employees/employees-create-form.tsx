@@ -7,7 +7,7 @@ import {
   Text,
 } from "@medusajs/ui";
 import { useState } from "react";
-import { AdminCreateEmployee, QueryCompany } from "../../../../../types";
+import { AdminCreateEmployeeInvite, QueryCompany } from "../../../../../types";
 import { CoolSwitch } from "../../../../components/common";
 import { currencySymbolMap } from "../../../../utils";
 
@@ -17,20 +17,19 @@ export function EmployeesCreateForm({
   error,
   company,
 }: {
-  handleSubmit: (data: AdminCreateEmployee) => Promise<void>;
+  handleSubmit: (data: AdminCreateEmployeeInvite) => Promise<void>;
   loading: boolean;
   error: Error | null;
   company: QueryCompany;
 }) {
   const [formData, setFormData] = useState<
-    Omit<AdminCreateEmployee, "spending_limit"> & {
+    Omit<AdminCreateEmployeeInvite, "spending_limit"> & {
       spending_limit: string;
     }
   >({
-    company_id: company.id,
+    email: "",
     is_admin: false,
     spending_limit: "0",
-    customer_id: "",
   });
 
   const handleChange = (
@@ -56,7 +55,9 @@ export function EmployeesCreateForm({
       spending_limit: spendingLimit,
     };
 
-    handleSubmit(data);
+    handleSubmit(data).catch(() => {
+      // The error is surfaced through the `error` prop
+    });
   };
 
   return (
@@ -93,6 +94,7 @@ export function EmployeesCreateForm({
             <Input
               type="email"
               name="email"
+              required
               onChange={handleChange}
               placeholder="john.doe@example.com"
             />
@@ -152,7 +154,7 @@ export function EmployeesCreateForm({
           <Button variant="secondary">Cancel</Button>
         </Drawer.Close>
         <Button type="submit" disabled={loading}>
-          {loading ? "Saving..." : "Save"}
+          {loading ? "Sending..." : "Send invite"}
         </Button>
         {error && <Text className="text-red-500">{error.message}</Text>}
       </Drawer.Footer>

@@ -24,10 +24,15 @@ const RemoveEmployeePrompt = ({ employee }: { employee: QueryEmployee }) => {
 
   const handleRemove = async () => {
     setIsRemoving(true)
-    await deleteEmployee(employee.company_id, employee.id).catch(() => {
-      toast.error("Error deleting employee")
-    })
+    const removed = await deleteEmployee(employee.company_id, employee.id)
+      .then(() => true)
+      .catch(() => false)
     setIsRemoving(false)
+
+    if (!removed) {
+      toast.error("Error deleting employee")
+      return
+    }
 
     toast.success("Employee deleted")
   }
@@ -83,6 +88,7 @@ const Employee = ({
   })
 
   const isCurrentUser = employee.customer.id === customer?.id
+  const canManage = !!customer?.employee?.is_admin
 
   const handleSubmit = async () => {
     const updateData = {
@@ -91,13 +97,17 @@ const Employee = ({
     }
 
     setIsSaving(true)
-    await updateEmployee(updateData as StoreUpdateEmployee).catch(() => {
-      toast.error("Error updating employee")
-    })
-
+    const updated = await updateEmployee(updateData as StoreUpdateEmployee)
+      .then(() => true)
+      .catch(() => false)
     setIsSaving(false)
-    setIsEditing(false)
 
+    if (!updated) {
+      toast.error("Error updating employee")
+      return
+    }
+
+    setIsEditing(false)
     toast.success("Employee updated")
   }
 
@@ -136,36 +146,38 @@ const Employee = ({
             </Text>
           </div>
         </div>
-        <div className="flex items-center justify-end gap-2">
-          {isEditing ? (
-            <>
-              <Button
-                variant="secondary"
-                onClick={() => setIsEditing(false)}
-                disabled={isSaving}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleSubmit}
-                isLoading={isSaving}
-              >
-                Save
-              </Button>
-            </>
-          ) : (
-            <>
-              {!isCurrentUser && <RemoveEmployeePrompt employee={employee} />}
-              <Button
-                variant="secondary"
-                onClick={() => setIsEditing((prev) => !prev)}
-              >
-                Edit
-              </Button>
-            </>
-          )}
-        </div>
+        {canManage && (
+          <div className="flex items-center justify-end gap-2">
+            {isEditing ? (
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsEditing(false)}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleSubmit}
+                  isLoading={isSaving}
+                >
+                  Save
+                </Button>
+              </>
+            ) : (
+              <>
+                {!isCurrentUser && <RemoveEmployeePrompt employee={employee} />}
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsEditing((prev) => !prev)}
+                >
+                  Edit
+                </Button>
+              </>
+            )}
+          </div>
+        )}
       </div>
       <form
         className={clx(

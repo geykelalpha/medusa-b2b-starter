@@ -1,4 +1,8 @@
-import { ModuleCompanySpendingLimitResetFrequency } from "./module"
+import {
+  ModuleCompanySpendingLimitResetFrequency,
+  ModuleEmployeeInvite,
+  ModuleEmployeeInviteStatus,
+} from "./module"
 import { QueryCompany, QueryEmployee } from "./query"
 
 export type StoreCompanyResponse = {
@@ -43,4 +47,35 @@ export type StoreUpdateEmployee = {
   company_id: string
   spending_limit?: number
   is_admin?: boolean
+}
+
+export type StoreEmployeeInviteResponse = {
+  invite: ModuleEmployeeInvite
+}
+
+export type StoreEmployeeInvitesResponse = {
+  invites: ModuleEmployeeInvite[]
+}
+
+export type StoreCreateEmployeeInvite = {
+  email: string
+  first_name?: string | null
+  last_name?: string | null
+  phone?: string | null
+  spending_limit?: number
+  is_admin?: boolean
+}
+
+export type StoreEmployeeInvitePreview = {
+  email: string
+  first_name: string | null
+  last_name: string | null
+  status: ModuleEmployeeInviteStatus
+  expired: boolean
+  has_account: boolean
+  company: { name: string }
+}
+
+export type StoreEmployeeInvitePreviewResponse = {
+  invite: StoreEmployeeInvitePreview
 }

@@ -80,3 +80,45 @@ export interface ModuleUpdateEmployee extends Partial<ModuleEmployee> {
 export type ModuleDeleteEmployee = {
   id: string;
 };
+
+/* Entity: Employee Invite */
+
+export type ModuleEmployeeInviteStatus = "pending" | "accepted" | "revoked";
+
+export interface ModuleEmployeeInvite {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  spending_limit: number;
+  is_admin: boolean;
+  token_hash: string;
+  expires_at: Date;
+  status: ModuleEmployeeInviteStatus;
+  accepted_at: Date | null;
+  invited_by: string | null;
+  employee_id: string | null;
+  company_id: string;
+  created_at: Date;
+  updated_at: Date;
+  company?: ModuleCompany;
+}
+
+export type ModuleCreateEmployeeInvite = {
+  company_id: string;
+  email: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  phone?: string | null;
+  spending_limit?: number;
+  is_admin?: boolean;
+  token_hash: string;
+  expires_at: Date;
+  invited_by?: string | null;
+};
+
+export interface ModuleUpdateEmployeeInvite
+  extends Partial<Omit<ModuleEmployeeInvite, "company">> {
+  id: string;
+}
