@@ -6,11 +6,14 @@ import { MiddlewareRoute } from "@medusajs/medusa";
 import {
   adminApprovalSettingsQueryConfig,
   adminCompanyQueryConfig,
+  adminEmployeeInviteQueryConfig,
   adminEmployeeQueryConfig,
 } from "./query-config";
 import {
   AdminCreateCompany,
   AdminCreateEmployee,
+  AdminCreateEmployeeInvite,
+  AdminGetEmployeeInvitesParams,
   AdminGetApprovalSettingsParams,
   AdminGetCompanyParams,
   AdminGetEmployeeParams,
@@ -106,6 +109,22 @@ export const adminCompaniesMiddlewares: MiddlewareRoute[] = [
         adminEmployeeQueryConfig.retrieve
       ),
     ],
+  },
+  /* Employee Invites Middlewares */
+  {
+    method: ["GET"],
+    matcher: "/admin/companies/:id/invites",
+    middlewares: [
+      validateAndTransformQuery(
+        AdminGetEmployeeInvitesParams,
+        adminEmployeeInviteQueryConfig.list
+      ),
+    ],
+  },
+  {
+    method: ["POST"],
+    matcher: "/admin/companies/:id/invites",
+    middlewares: [validateAndTransformBody(AdminCreateEmployeeInvite)],
   },
   /* Approval Settings Middlewares */
   {

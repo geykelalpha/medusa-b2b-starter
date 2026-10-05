@@ -4,14 +4,18 @@ import {
   validateAndTransformQuery,
 } from "@medusajs/framework";
 import { authenticate } from "@medusajs/medusa";
+import { ensureCompanyAdmin } from "../../middlewares/ensure-company-admin";
 import { ensureRole } from "../../middlewares/ensure-role";
 import {
   storeCompanyQueryConfig,
+  storeEmployeeInviteQueryConfig,
   storeEmployeeQueryConfig,
 } from "./query-config";
 import {
   StoreCreateCompany,
   StoreCreateEmployee,
+  StoreCreateEmployeeInvite,
+  StoreGetEmployeeInvitesParams,
   StoreGetCompanyParams,
   StoreGetEmployeeParams,
   StoreUpdateApprovalSettings,
@@ -60,11 +64,18 @@ export const storeCompaniesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/store/companies/:id",
     middlewares: [
+      ensureCompanyAdmin,
       validateAndTransformQuery(
         StoreGetCompanyParams,
         storeCompanyQueryConfig.retrieve
       ),
     ],
+  },
+
+  {
+    method: ["DELETE"],
+    matcher: "/store/companies/:id",
+    middlewares: [ensureCompanyAdmin],
   },
 
   /* Employee middlewares */
@@ -104,7 +115,7 @@ export const storeCompaniesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/store/companies/:id/employees/:employee_id",
     middlewares: [
-      ensureRole("company_admin"),
+      ensureCompanyAdmin,
       validateAndTransformBody(StoreUpdateEmployee),
       validateAndTransformQuery(
         StoreGetEmployeeParams,
@@ -119,5 +130,27 @@ export const storeCompaniesMiddlewares: MiddlewareRoute[] = [
       ensureRole("company_admin"),
       validateAndTransformBody(StoreUpdateApprovalSettings),
     ],
+  },
+  {
+    method: ["DELETE"],
+    matcher: "/store/companies/:id/employees/:employee_id",
+    middlewares: [ensureCompanyAdmin],
+  },
+  /* Employee invite middlewares */
+  {
+    method: ["GET"],
+    matcher: "/store/companies/:id/invites",
+    middlewares: [
+      ensureCompanyAdmin,
+      validateAndTransformQuery(
+        StoreGetEmployeeInvitesParams,
+        storeEmployeeInviteQueryConfig.list
+      ),
+    ],
+  },
+  {
+    method: ["POST"],
+    matcher: "/store/companies/:id/invites",
+    middlewares: [validateAndTransformBody(StoreCreateEmployeeInvite)],
   },
 ];

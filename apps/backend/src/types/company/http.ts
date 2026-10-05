@@ -1,5 +1,5 @@
 import { FindParams, PaginatedResponse } from "@medusajs/framework/types";
-import { QueryCompany, QueryEmployee } from "./query";
+import { QueryCompany, QueryEmployee, QueryEmployeeInvite } from "./query";
 import { ModuleCompanyFilters, ModuleEmployeeFilters } from "./service";
 import { ModuleCompanySpendingLimitResetFrequency } from "./module";
 
@@ -55,6 +55,25 @@ export type AdminCreateEmployee = {
 };
 
 export type AdminUpdateEmployee = Partial<AdminCreateEmployee>;
+
+/* Employee Invite */
+
+export type AdminEmployeeInviteResponse = {
+  invite: QueryEmployeeInvite;
+};
+
+export type AdminEmployeeInvitesResponse = {
+  invites: QueryEmployeeInvite[];
+};
+
+export type AdminCreateEmployeeInvite = {
+  email: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  phone?: string | null;
+  spending_limit?: number;
+  is_admin?: boolean;
+};
 
 /* Store */
 
@@ -122,4 +141,37 @@ export type StoreUpdateEmployee = {
   spending_limit: number;
   is_admin: boolean;
   company_id: string;
+};
+
+/* Employee Invite */
+
+export type StoreEmployeeInviteResponse = {
+  invite: QueryEmployeeInvite;
+};
+
+export type StoreEmployeeInvitesResponse = {
+  invites: QueryEmployeeInvite[];
+};
+
+export type StoreCreateEmployeeInvite = AdminCreateEmployeeInvite;
+
+export type StoreEmployeeInvitePreview = {
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  status: "pending" | "accepted" | "revoked";
+  expired: boolean;
+  has_account: boolean;
+  company: { name: string };
+};
+
+export type StoreEmployeeInvitePreviewResponse = {
+  invite: StoreEmployeeInvitePreview;
+};
+
+export type StoreAcceptEmployeeInvite = {
+  token: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  phone?: string | null;
 };

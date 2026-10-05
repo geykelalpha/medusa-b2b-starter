@@ -33,3 +33,22 @@ export type ModuleEmployee = {
   updated_at?: string
   deleted_at?: string | null
 }
+
+export type ModuleEmployeeInviteStatus = "pending" | "accepted" | "revoked"
+
+export type ModuleEmployeeInvite = {
+  id: string
+  company_id: string
+  email: string
+  first_name: string | null
+  last_name: string | null
+  phone: string | null
+  spending_limit: number
+  is_admin: boolean
+  status: ModuleEmployeeInviteStatus
+  expires_at: string
+  accepted_at: string | null
+  employee_id: string | null
+  created_at?: string
+  updated_at?: string
+}

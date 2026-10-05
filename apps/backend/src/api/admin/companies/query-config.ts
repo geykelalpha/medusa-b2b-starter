@@ -1,3 +1,5 @@
+import { employeeInviteFields } from "../../utils/employee-invites";
+
 /* Company Query Config */
 export const adminCompanyFields = [
   "id",
@@ -64,5 +66,15 @@ export const adminApprovalSettingsQueryConfig = {
   retrieve: {
     defaults: adminApprovalSettingsFields,
     isList: false,
+  },
+};
+
+/* Employee Invite Query Config */
+export const adminEmployeeInviteQueryConfig = {
+  list: {
+    defaults: employeeInviteFields,
+    allowed: employeeInviteFields,
+    defaultLimit: 50,
+    isList: true,
   },
 };

@@ -24,7 +24,7 @@ export const setAdminRoleStep = createStep(
     );
 
     if (employee.customer?.has_account === false) {
-      return new StepResponse(undefined, input);
+      return new StepResponse(undefined);
     }
 
     const {
@@ -41,7 +41,7 @@ export const setAdminRoleStep = createStep(
     );
 
     if (!customer.email) {
-      return new StepResponse(undefined, input);
+      return new StepResponse(undefined);
     }
 
     const {
@@ -59,20 +59,28 @@ export const setAdminRoleStep = createStep(
       Modules.AUTH
     );
 
-    if (providerIdentity) {
-      await authModuleService.updateProviderIdentities([
-        {
-          id: providerIdentity.id,
-          user_metadata: {
-            role: "company_admin",
-          },
-        },
-      ]);
+    if (!providerIdentity) {
+      return new StepResponse(undefined);
     }
 
-    return new StepResponse(undefined, input);
+    await authModuleService.updateProviderIdentities([
+      {
+        id: providerIdentity.id,
+        user_metadata: {
+          role: "company_admin",
+        },
+      },
+    ]);
+
+    return new StepResponse(undefined, {
+      providerIdentityId: providerIdentity.id,
+    });
   },
-  async (input: { providerIdentityId: string }, { container }) => {
+  async (input: { providerIdentityId: string } | undefined, { container }) => {
+    if (!input?.providerIdentityId) {
+      return;
+    }
+
     const authModuleService = container.resolve<IAuthModuleService>(
       Modules.AUTH
     );

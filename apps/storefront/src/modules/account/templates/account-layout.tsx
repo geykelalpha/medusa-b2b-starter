@@ -13,10 +13,13 @@ const AccountLayout: React.FC<AccountLayoutProps> = async ({
   customer,
   children,
 }) => {
-  const { carts_with_approvals } = await listApprovals({
-    type: ApprovalType.ADMIN,
-    status: ApprovalStatusType.PENDING,
-  })
+  // Approvals are company-wide data that only company admins can access
+  const { carts_with_approvals } = customer?.employee?.is_admin
+    ? await listApprovals({
+        type: ApprovalType.ADMIN,
+        status: ApprovalStatusType.PENDING,
+      })
+    : { carts_with_approvals: [] }
 
   const numPendingApprovals = carts_with_approvals?.length || 0
 

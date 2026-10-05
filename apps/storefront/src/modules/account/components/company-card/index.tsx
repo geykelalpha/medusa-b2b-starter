@@ -17,7 +17,11 @@ import { useState } from "react"
 const CompanyCard = ({
   company,
   regions,
-}: StoreCompanyResponse & { regions: HttpTypes.StoreRegion[] }) => {
+  canEdit,
+}: StoreCompanyResponse & {
+  regions: HttpTypes.StoreRegion[]
+  canEdit: boolean
+}) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -29,12 +33,17 @@ const CompanyCard = ({
 
   const handleSave = async () => {
     setIsSaving(true)
-    await updateCompany(companyData).catch(() => {
-      toast.error("Error updating company")
-    })
+    const updated = await updateCompany(companyData)
+      .then(() => true)
+      .catch(() => false)
     setIsSaving(false)
-    setIsEditing(false)
 
+    if (!updated) {
+      toast.error("Error updating company")
+      return
+    }
+
+    setIsEditing(false)
     toast.success("Company updated")
   }
 
@@ -249,30 +258,32 @@ const CompanyCard = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 bg-neutral-50 p-4">
-          {isEditing ? (
-            <>
-              <Button
-                variant="secondary"
-                onClick={() => setIsEditing(false)}
-                disabled={isSaving}
-              >
-                Cancel
+        {canEdit && (
+          <div className="flex items-center justify-end gap-2 bg-neutral-50 p-4">
+            {isEditing ? (
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsEditing(false)}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleSave}
+                  isLoading={isSaving}
+                >
+                  Save
+                </Button>
+              </>
+            ) : (
+              <Button variant="secondary" onClick={() => setIsEditing(true)}>
+                Edit
               </Button>
-              <Button
-                variant="primary"
-                onClick={handleSave}
-                isLoading={isSaving}
-              >
-                Save
-              </Button>
-            </>
-          ) : (
-            <Button variant="secondary" onClick={() => setIsEditing(true)}>
-              Edit
-            </Button>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </Container>
     </div>
   )

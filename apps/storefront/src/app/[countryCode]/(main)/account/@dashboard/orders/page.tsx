@@ -20,13 +20,19 @@ export default async function Orders() {
   const { approval_settings } =
     (await retrieveCompany(customer?.employee?.company_id!)) || {}
 
+  const isAdmin = !!customer?.employee?.is_admin
+
   const approval_required =
     approval_settings?.requires_admin_approval ||
     approval_settings?.requires_sales_manager_approval
 
-  const { carts_with_approvals } = await listApprovals({
-    status: ApprovalStatusType.PENDING,
-  })
+  // Approvals are company-wide data that only company admins can access
+  const { carts_with_approvals } =
+    isAdmin && approval_required
+      ? await listApprovals({
+          status: ApprovalStatusType.PENDING,
+        })
+      : { carts_with_approvals: [] }
 
   return (
     <div
@@ -36,7 +42,7 @@ export default async function Orders() {
       <div className="mb-4">
         <Heading>Orders</Heading>
       </div>
-      {approval_required && (
+      {isAdmin && approval_required && (
         <div>
           <Heading level="h2" className="text-neutral-700 mb-4">
             Pending Approvals

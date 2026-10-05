@@ -131,6 +131,36 @@ export async function signup(_currentState: unknown, formData: FormData) {
   }
 }
 
+/**
+ * Refreshes customer-scoped caches after authenticating and tags the
+ * active cart with the customer's company.
+ */
+export async function syncCustomerSession() {
+  const [customerCacheTag, productsCacheTag, cartsCacheTag] =
+    await Promise.all([
+      getCacheTag("customers"),
+      getCacheTag("products"),
+      getCacheTag("carts"),
+    ])
+
+  revalidateTag(customerCacheTag)
+
+  const customer = await retrieveCustomer()
+  const cart = await retrieveCart()
+
+  if (cart && customer?.employee?.company_id) {
+    await updateCart({
+      metadata: {
+        ...cart?.metadata,
+        company_id: customer.employee.company_id,
+      },
+    })
+  }
+
+  revalidateTag(productsCacheTag)
+  revalidateTag(cartsCacheTag)
+}
+
 export async function login(_currentState: unknown, formData: FormData) {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
@@ -140,31 +170,8 @@ export async function login(_currentState: unknown, formData: FormData) {
       .login("customer", "emailpass", { email, password })
       .then(async (token) => {
         track("customer_logged_in")
-        setAuthToken(token as string)
-
-        const [customerCacheTag, productsCacheTag, cartsCacheTag] =
-          await Promise.all([
-            getCacheTag("customers"),
-            getCacheTag("products"),
-            getCacheTag("carts"),
-          ])
-
-        revalidateTag(customerCacheTag)
-
-        const customer = await retrieveCustomer()
-        const cart = await retrieveCart()
-
-        if (customer?.employee?.company_id) {
-          await updateCart({
-            metadata: {
-              ...cart?.metadata,
-              company_id: customer.employee.company_id,
-            },
-          })
-        }
-
-        revalidateTag(productsCacheTag)
-        revalidateTag(cartsCacheTag)
+        await setAuthToken(token as string)
+        await syncCustomerSession()
       })
   } catch (error: any) {
     return error.toString()

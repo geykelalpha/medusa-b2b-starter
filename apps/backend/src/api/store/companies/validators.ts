@@ -1,4 +1,7 @@
-import { createSelectParams } from "@medusajs/medusa/api/utils/validators";
+import {
+  createFindParams,
+  createSelectParams,
+} from "@medusajs/medusa/api/utils/validators";
 import { z } from "@medusajs/framework/zod";
 import { ApprovalStatusType } from "../../../types/approval";
 
@@ -103,3 +106,28 @@ export const StoreDeleteApproval = z.object({
   id: z.string(),
 });
 ``;
+
+/* Employee Invite Validators */
+export type StoreGetEmployeeInvitesParamsType = z.infer<
+  typeof StoreGetEmployeeInvitesParams
+>;
+export const StoreGetEmployeeInvitesParams = createFindParams({
+  limit: 50,
+  offset: 0,
+}).extend({
+  status: z.enum(["pending", "accepted", "revoked"]).optional(),
+});
+
+export type StoreCreateEmployeeInviteType = z.infer<
+  typeof StoreCreateEmployeeInvite
+>;
+export const StoreCreateEmployeeInvite = z
+  .object({
+    email: z.email(),
+    first_name: z.string().optional().nullable(),
+    last_name: z.string().optional().nullable(),
+    phone: z.string().optional().nullable(),
+    spending_limit: z.number().min(0).optional(),
+    is_admin: z.boolean().optional(),
+  })
+  .strict();

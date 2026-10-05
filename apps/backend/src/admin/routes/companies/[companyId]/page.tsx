@@ -15,6 +15,7 @@ import { formatAmount } from "../../../utils";
 import { CompanyActionsMenu } from "../components";
 import {
   EmployeeCreateDrawer,
+  EmployeeInvitesSection,
   EmployeesActionsMenu,
 } from "../components/employees";
 
@@ -217,7 +218,7 @@ const CompanyDetails = () => {
                       No records
                     </Text>
                     <Text className="txt-small text-ui-fg-muted">
-                      This company doesn't have any employees.
+                      This company doesn't have any employees yet. Invite one to get started.
                     </Text>
                   </div>
                 </div>
@@ -226,6 +227,7 @@ const CompanyDetails = () => {
           </>
         )}
       </Container>
+      <EmployeeInvitesSection company={company} />
       <Toaster />
     </div>
   );

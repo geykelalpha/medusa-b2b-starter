@@ -9,9 +9,13 @@ import {
   ModuleCompany,
   ModuleCreateCompany,
   ModuleCreateEmployee,
+  ModuleCreateEmployeeInvite,
   ModuleEmployee,
+  ModuleEmployeeInvite,
+  ModuleEmployeeInviteStatus,
   ModuleUpdateCompany,
   ModuleUpdateEmployee,
+  ModuleUpdateEmployeeInvite,
 } from "./module";
 
 export interface ModuleCompanyFilters
@@ -26,6 +30,15 @@ export interface ModuleEmployeeFilters
   id?: string | string[];
   company_id?: string | string[];
   customer_id?: string | string[];
+}
+
+export interface ModuleEmployeeInviteFilters
+  extends BaseFilterable<ModuleEmployeeInviteFilters> {
+  id?: string | string[];
+  company_id?: string | string[];
+  email?: string | string[];
+  token_hash?: string;
+  status?: ModuleEmployeeInviteStatus | ModuleEmployeeInviteStatus[];
 }
 
 /**
@@ -108,4 +121,30 @@ export interface ICompanyModuleService extends IModuleService {
     config?: RestoreReturn<TReturnableLinkableKeys>,
     sharedContext?: Context
   ): Promise<Record<TReturnableLinkableKeys, string[]> | void>;
+
+  /* Entity: Employee Invites */
+
+  listEmployeeInvites(
+    filters?: ModuleEmployeeInviteFilters,
+    config?: FindConfig<ModuleEmployeeInvite>,
+    sharedContext?: Context
+  ): Promise<ModuleEmployeeInvite[]>;
+
+  retrieveEmployeeInvite(
+    id: string,
+    config?: FindConfig<ModuleEmployeeInvite>,
+    sharedContext?: Context
+  ): Promise<ModuleEmployeeInvite>;
+
+  createEmployeeInvites(
+    data: ModuleCreateEmployeeInvite,
+    sharedContext?: Context
+  ): Promise<ModuleEmployeeInvite>;
+
+  updateEmployeeInvites(
+    data: ModuleUpdateEmployeeInvite,
+    sharedContext?: Context
+  ): Promise<ModuleEmployeeInvite>;
+
+  deleteEmployeeInvites(ids: string[], sharedContext?: Context): Promise<void>;
 }
