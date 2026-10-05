@@ -4,7 +4,11 @@ import { createRemoteLinkStep } from "@medusajs/medusa/core-flows";
 import { createWorkflow, WorkflowResponse } from "@medusajs/framework/workflows-sdk";
 import { COMPANY_MODULE } from "../../../modules/company";
 import { ModuleCreateEmployee, ModuleEmployee } from "../../../types";
-import { createEmployeesStep, setAdminRoleStep } from "../steps";
+import {
+  createEmployeesStep,
+  setAdminRoleStep,
+  validateCustomerCanJoinCompanyStep,
+} from "../steps";
 import { addEmployeeToCustomerGroupStep } from "../steps/add-employee-to-customer-group";
 
 type WorkflowInput = {
@@ -15,6 +19,8 @@ type WorkflowInput = {
 export const createEmployeesWorkflow = createWorkflow(
   "create-employees",
   function (input: WorkflowInput): WorkflowResponse<ModuleEmployee> {
+    validateCustomerCanJoinCompanyStep({ customer_id: input.customerId });
+
     const employee = createEmployeesStep(input.employeeData);
 
     createRemoteLinkStep([

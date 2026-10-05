@@ -12,7 +12,7 @@ export enum SpendingLimitResetFrequency {
 
 export interface B2BCart extends Omit<HttpTypes.StoreCart, "promotions"> {
   completed_at?: string
-  company: QueryCompany
+  company: QueryCompany | null
   promotions?: HttpTypes.StorePromotion[]
   customer?: HttpTypes.StoreCustomer
   approvals?: QueryApproval[]
@@ -20,7 +20,7 @@ export interface B2BCart extends Omit<HttpTypes.StoreCart, "promotions"> {
 }
 
 export interface B2BOrder extends HttpTypes.StoreOrder {
-  company: QueryCompany
+  company: QueryCompany | null
 }
 
 export interface B2BCustomer extends HttpTypes.StoreCustomer {

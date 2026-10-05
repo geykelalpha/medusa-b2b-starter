@@ -4,3 +4,4 @@ export * from "./link-employee-to-customer";
 export * from "./remove-admin-role";
 export * from "./set-admin-role";
 export * from "./update-employees";
+export * from "./validate-customer-can-join-company";

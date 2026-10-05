@@ -13,7 +13,6 @@ import {
 } from "./query-config";
 import {
   StoreCreateCompany,
-  StoreCreateEmployee,
   StoreCreateEmployeeInvite,
   StoreGetEmployeeInvitesParams,
   StoreGetCompanyParams,
@@ -83,18 +82,6 @@ export const storeCompaniesMiddlewares: MiddlewareRoute[] = [
     method: ["GET"],
     matcher: "/store/companies/:id/employees",
     middlewares: [
-      validateAndTransformQuery(
-        StoreGetEmployeeParams,
-        storeEmployeeQueryConfig.list
-      ),
-    ],
-  },
-  {
-    method: ["POST"],
-    matcher: "/store/companies/:id/employees",
-    middlewares: [
-      ensureRole("company_admin"),
-      validateAndTransformBody(StoreCreateEmployee),
       validateAndTransformQuery(
         StoreGetEmployeeParams,
         storeEmployeeQueryConfig.list

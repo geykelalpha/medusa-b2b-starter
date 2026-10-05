@@ -67,7 +67,8 @@ const Summary = ({ customer, spendLimitExceeded }: SummaryProps) => {
             : "Log in to Checkout"}
         </Button>
       </LocalizedClientLink>
-      {!!customer && (
+      {/* Quotes are a company feature */}
+      {!!customer?.employee && (
         <RequestQuoteConfirmation>
           <Button
             className="w-full h-10 rounded-full shadow-borders-base"

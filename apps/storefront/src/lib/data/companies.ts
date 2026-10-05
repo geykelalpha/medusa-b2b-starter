@@ -7,16 +7,16 @@ import {
   getCacheTag,
 } from "@/lib/data/cookies"
 import {
-  StoreCompaniesResponse,
   StoreCompanyResponse,
   StoreCreateCompany,
-  StoreCreateEmployee,
   StoreEmployeeResponse,
   StoreUpdateCompany,
   StoreUpdateEmployee,
 } from "@/types"
 import { track } from "@vercel/analytics/server"
 import { revalidateTag } from "next/cache"
+import { companyFromFormData } from "@/lib/util/company-form"
+import { retrieveCustomer, syncCustomerSession } from "./customer"
 
 export const retrieveCompany = async (companyId: string) => {
   const headers = {
@@ -43,28 +43,62 @@ export const retrieveCompany = async (companyId: string) => {
   return company
 }
 
+/**
+ * Creates a company for the logged-in customer, who becomes its admin.
+ * Throws on failure.
+ */
 export const createCompany = async (data: StoreCreateCompany) => {
   const headers = {
     ...(await getAuthHeaders()),
   }
 
-  const {
-    companies: [company],
-  } = await sdk.client.fetch<StoreCompaniesResponse>(`/store/companies`, {
-    method: "POST",
-    body: data,
-    headers,
-  })
+  const { company } = await sdk.client.fetch<StoreCompanyResponse>(
+    `/store/companies`,
+    {
+      method: "POST",
+      body: data,
+      headers,
+    }
+  )
 
   track("company_created", {
     company_id: company.id,
     company_name: company.name,
   })
 
-  const cacheTag = await getCacheTag("companies")
-  revalidateTag(cacheTag)
+  const [companiesCacheTag, customersCacheTag] = await Promise.all([
+    getCacheTag("companies"),
+    getCacheTag("customers"),
+  ])
+  revalidateTag(companiesCacheTag)
+  revalidateTag(customersCacheTag)
 
   return company
+}
+
+/**
+ * Server action for the account's "create a company" form. Returns
+ * `{ error }` instead of throwing so the message reaches the client.
+ */
+export const createMyCompany = async (
+  _currentState: unknown,
+  formData: FormData
+): Promise<{ error: string | null }> => {
+  const customer = await retrieveCustomer()
+
+  if (!customer) {
+    return { error: "You must be logged in to create a company" }
+  }
+
+  try {
+    await createCompany(companyFromFormData(formData, customer.email))
+  } catch (error: any) {
+    return { error: error?.message || "Could not create the company" }
+  }
+
+  await syncCustomerSession()
+
+  return { error: null }
 }
 
 export const updateCompany = async (data: StoreUpdateCompany) => {
@@ -87,32 +121,6 @@ export const updateCompany = async (data: StoreUpdateCompany) => {
   revalidateTag(cacheTag)
 
   return company
-}
-
-export const createEmployee = async (data: StoreCreateEmployee) => {
-  const { company_id, ...employeeData } = data
-
-  const headers = {
-    ...(await getAuthHeaders()),
-  }
-
-  const employee = await sdk.client.fetch<StoreEmployeeResponse>(
-    `/store/companies/${company_id}/employees`,
-    {
-      method: "POST",
-      body: employeeData,
-      headers,
-    }
-  )
-
-  track("employee_created", {
-    employee_id: employee.employee.id,
-  })
-
-  const cacheTag = await getCacheTag("companies")
-  revalidateTag(cacheTag)
-
-  return employee
 }
 
 export const updateEmployee = async (data: StoreUpdateEmployee) => {

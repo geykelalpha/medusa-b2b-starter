@@ -1,8 +1,15 @@
+import { retrieveCustomer } from "@/lib/data/customer"
 import { fetchQuotes } from "@/lib/data/quotes"
 import { Heading } from "@medusajs/ui"
+import { notFound } from "next/navigation"
 import QuotesOverview from "./components/quotes-overview"
 
 export default async function Quotes() {
+  const customer = await retrieveCustomer()
+
+  // Quotes are a company feature
+  if (!customer?.employee) notFound()
+
   const { quotes } = await fetchQuotes()
 
   return (

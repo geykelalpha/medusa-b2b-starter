@@ -11,7 +11,7 @@ export function getSpendWindow(company: any): {
   end: Date
 } {
   const now = new Date()
-  const resetFrequency = company.spending_limit_reset_frequency
+  const resetFrequency = company?.spending_limit_reset_frequency
 
   switch (resetFrequency) {
     case ModuleCompanySpendingLimitResetFrequency.NEVER:

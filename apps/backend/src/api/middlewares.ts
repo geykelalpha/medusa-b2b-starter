@@ -9,7 +9,7 @@ export default defineMiddlewares({
     ...storeMiddlewares,
     {
       matcher: "/store/customers/me",
-      middlewares: [allowFields("employee")],
+      middlewares: [allowFields("employee", "employee.company")],
     },
     {
       matcher: "/store/carts",
