@@ -122,3 +122,13 @@ export const StoreCreateEmployeeInvite = z
     is_admin: z.boolean().optional(),
   })
   .strict();
+
+/* Ownership Validators */
+export type StoreTransferCompanyOwnershipType = z.infer<
+  typeof StoreTransferCompanyOwnership
+>;
+export const StoreTransferCompanyOwnership = z
+  .object({
+    employee_id: z.string(),
+  })
+  .strict();

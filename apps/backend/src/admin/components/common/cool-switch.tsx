@@ -8,6 +8,7 @@ const CoolSwitch = ({
   label,
   description,
   tooltip,
+  disabled,
 }: {
   checked: boolean;
   onChange: (checked: boolean) => void;
@@ -15,11 +16,17 @@ const CoolSwitch = ({
   label: string;
   description: string;
   tooltip?: string;
+  disabled?: boolean;
 }) => {
   return (
     <Container className="bg-ui-bg-subtle flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <Switch name={fieldName} checked={checked} onCheckedChange={onChange} />
+        <Switch
+          name={fieldName}
+          checked={checked}
+          onCheckedChange={onChange}
+          disabled={disabled}
+        />
         <Label size="xsmall" className="txt-compact-small font-medium">
           {label}
         </Label>

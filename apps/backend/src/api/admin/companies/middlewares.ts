@@ -17,6 +17,7 @@ import {
   AdminGetApprovalSettingsParams,
   AdminGetCompanyParams,
   AdminGetEmployeeParams,
+  AdminTransferCompanyOwnership,
   AdminUpdateApprovalSettings,
   AdminUpdateCompany,
   AdminUpdateEmployee,
@@ -137,5 +138,11 @@ export const adminCompaniesMiddlewares: MiddlewareRoute[] = [
         adminApprovalSettingsQueryConfig.retrieve
       ),
     ],
+  },
+  /* Ownership Middlewares */
+  {
+    method: ["POST"],
+    matcher: "/admin/companies/:id/transfer-ownership",
+    middlewares: [validateAndTransformBody(AdminTransferCompanyOwnership)],
   },
 ];

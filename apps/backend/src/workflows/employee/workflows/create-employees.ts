@@ -5,6 +5,7 @@ import { createWorkflow, WorkflowResponse } from "@medusajs/framework/workflows-
 import { COMPANY_MODULE } from "../../../modules/company";
 import { ModuleCreateEmployee, ModuleEmployee } from "../../../types";
 import {
+  claimCompanyOwnershipStep,
   createEmployeesStep,
   setAdminRoleStep,
   validateCustomerCanJoinCompanyStep,
@@ -38,6 +39,12 @@ export const createEmployeesWorkflow = createWorkflow(
       setAdminRoleStep({
         employeeId: employee.id,
         customerId: input.customerId,
+      });
+
+      // The first admin of a company without an owner becomes its owner
+      claimCompanyOwnershipStep({
+        employee_id: employee.id,
+        company_id: input.employeeData.company_id,
       });
     });
 

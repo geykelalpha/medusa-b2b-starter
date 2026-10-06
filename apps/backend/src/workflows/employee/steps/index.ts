@@ -5,3 +5,8 @@ export * from "./remove-admin-role";
 export * from "./set-admin-role";
 export * from "./update-employees";
 export * from "./validate-customer-can-join-company";
+export * from "./claim-company-ownership";
+export * from "./transfer-company-ownership";
+export * from "./validate-employee-update";
+export * from "./validate-employees-removable";
+export * from "./validate-ownership-transfer";

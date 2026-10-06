@@ -17,6 +17,7 @@ import {
   StoreGetEmployeeInvitesParams,
   StoreGetCompanyParams,
   StoreGetEmployeeParams,
+  StoreTransferCompanyOwnership,
   StoreUpdateApprovalSettings,
   StoreUpdateEmployee,
 } from "./validators";
@@ -139,5 +140,14 @@ export const storeCompaniesMiddlewares: MiddlewareRoute[] = [
     method: ["POST"],
     matcher: "/store/companies/:id/invites",
     middlewares: [validateAndTransformBody(StoreCreateEmployeeInvite)],
+  },
+  /* Ownership middlewares */
+  {
+    method: ["POST"],
+    matcher: "/store/companies/:id/transfer-ownership",
+    middlewares: [
+      ensureCompanyAdmin,
+      validateAndTransformBody(StoreTransferCompanyOwnership),
+    ],
   },
 ];

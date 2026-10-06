@@ -153,3 +153,13 @@ export const AdminCreateEmployeeInvite = z
     is_admin: z.boolean().optional(),
   })
   .strict();
+
+/* Ownership Validators */
+export type AdminTransferCompanyOwnershipType = z.infer<
+  typeof AdminTransferCompanyOwnership
+>;
+export const AdminTransferCompanyOwnership = z
+  .object({
+    employee_id: z.string(),
+  })
+  .strict();

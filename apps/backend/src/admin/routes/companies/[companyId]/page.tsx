@@ -195,6 +195,11 @@ const CompanyDetails = () => {
                             Admin
                           </Badge>
                         )}
+                        {employee.is_owner && (
+                          <Badge size="2xsmall" color="blue">
+                            Owner
+                          </Badge>
+                        )}
                       </Table.Cell>
                       <Table.Cell>{employee.customer?.email}</Table.Cell>
                       <Table.Cell>

@@ -30,6 +30,7 @@ export interface ModuleEmployeeFilters
   id?: string | string[];
   company_id?: string | string[];
   customer_id?: string | string[];
+  is_owner?: boolean;
 }
 
 export interface ModuleEmployeeInviteFilters

@@ -72,10 +72,7 @@ export const DELETE = async (
   const { id, employeeId } = req.params;
 
   await deleteEmployeesWorkflow.run({
-    input: {
-      id: employeeId,
-      company_id: id,
-    },
+    input: { company_id: id, employee_ids: [employeeId] },
     container: req.scope,
   });
 

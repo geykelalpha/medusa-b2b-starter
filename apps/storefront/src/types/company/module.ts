@@ -29,6 +29,7 @@ export type ModuleEmployee = {
   company_id: string
   spending_limit: number
   is_admin: boolean
+  is_owner: boolean
   created_at?: string
   updated_at?: string
   deleted_at?: string | null

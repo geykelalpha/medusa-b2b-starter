@@ -131,8 +131,13 @@ export function EmployeesUpdateForm({
               <CoolSwitch
                 fieldName="is_admin"
                 label="Is Admin"
-                description="Enable to grant admin access"
+                description={
+                  employee?.is_owner
+                    ? "The company owner is always an admin"
+                    : "Enable to grant admin access"
+                }
                 checked={formData.is_admin}
+                disabled={!!employee?.is_owner}
                 onChange={(checked) =>
                   setFormData({ ...formData, is_admin: checked })
                 }

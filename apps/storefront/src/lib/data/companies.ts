@@ -162,6 +162,41 @@ export const deleteEmployee = async (companyId: string, employeeId: string) => {
   revalidateTag(cacheTag)
 }
 
+/**
+ * Makes another admin the company owner. Only the current owner can do this.
+ * Returns `{ error }` instead of throwing so the message reaches the client.
+ */
+export const transferCompanyOwnership = async (
+  companyId: string,
+  employeeId: string
+): Promise<{ error: string | null }> => {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  try {
+    await sdk.client.fetch<StoreCompanyResponse>(
+      `/store/companies/${companyId}/transfer-ownership`,
+      {
+        method: "POST",
+        body: { employee_id: employeeId },
+        headers,
+      }
+    )
+  } catch (error: any) {
+    return { error: error?.message || "Could not transfer ownership" }
+  }
+
+  const [companiesCacheTag, customersCacheTag] = await Promise.all([
+    getCacheTag("companies"),
+    getCacheTag("customers"),
+  ])
+  revalidateTag(companiesCacheTag)
+  revalidateTag(customersCacheTag)
+
+  return { error: null }
+}
+
 export const updateApprovalSettings = async (
   companyId: string,
   requiresAdminApproval: boolean
