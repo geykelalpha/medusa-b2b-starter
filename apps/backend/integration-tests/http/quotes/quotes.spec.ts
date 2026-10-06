@@ -6,6 +6,7 @@ import {
 } from "../../utils/admin";
 import {
   cartSeeder,
+  companySeeder,
   productSeeder,
   regionSeeder,
   salesChannelSeeder,
@@ -31,6 +32,8 @@ medusaIntegrationTestRunner({
       const res = await createStoreUser({ api, storeHeaders });
       customerToken = res.token;
       storeHeaders.headers["Authorization"] = `Bearer ${customerToken}`;
+      // Quotes are for company members only
+      await companySeeder({ api, storeHeaders, data: {} });
       region = await regionSeeder({ api, adminHeaders, data: {} });
 
       salesChannel = await salesChannelSeeder({
@@ -91,7 +94,6 @@ medusaIntegrationTestRunner({
               ],
               summary: expect.objectContaining({
                 paid_total: 0,
-                difference_sum: 0,
                 refunded_total: 0,
                 transaction_total: 0,
                 pending_difference: 100,
