@@ -53,15 +53,6 @@ export const StoreUpdateCompany = z
 export type StoreGetEmployeeParamsType = z.infer<typeof StoreGetEmployeeParams>;
 export const StoreGetEmployeeParams = createSelectParams();
 
-export type StoreCreateEmployeeType = z.infer<typeof StoreCreateEmployee>;
-export const StoreCreateEmployee = z
-  .object({
-    spending_limit: z.number().optional().nullable(),
-    is_admin: z.boolean().optional().nullable().default(false),
-    customer_id: z.string(),
-  })
-  .strict();
-
 export type StoreUpdateEmployeeType = z.infer<typeof StoreUpdateEmployee>;
 export const StoreUpdateEmployee = z
   .object({
@@ -129,5 +120,15 @@ export const StoreCreateEmployeeInvite = z
     phone: z.string().optional().nullable(),
     spending_limit: z.number().min(0).optional(),
     is_admin: z.boolean().optional(),
+  })
+  .strict();
+
+/* Ownership Validators */
+export type StoreTransferCompanyOwnershipType = z.infer<
+  typeof StoreTransferCompanyOwnership
+>;
+export const StoreTransferCompanyOwnership = z
+  .object({
+    employee_id: z.string(),
   })
   .strict();

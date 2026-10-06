@@ -211,3 +211,28 @@ export const useRemoveCompanyFromCustomerGroup = (
     ...options,
   });
 };
+
+export const useTransferCompanyOwnership = (
+  companyId: string,
+  options?: UseMutationOptions<AdminCompanyResponse, FetchError, string>
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (employeeId: string) =>
+      sdk.client.fetch<AdminCompanyResponse>(
+        `/admin/companies/${companyId}/transfer-ownership`,
+        {
+          method: "POST",
+          body: { employee_id: employeeId },
+        }
+      ),
+    onSuccess: (data: any, variables: any, context: any) => {
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKey.detail(companyId),
+      });
+      options?.onSuccess?.(data, variables, context);
+    },
+    ...options,
+  });
+};

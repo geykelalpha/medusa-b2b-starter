@@ -2,6 +2,7 @@ import { retrieveCustomer } from "@/lib/data/customer"
 import { retrieveInvite } from "@/lib/data/invites"
 import AcceptInvite from "@/modules/account/components/accept-invite"
 import { Metadata } from "next"
+import { redirect } from "next/navigation"
 
 export const metadata: Metadata = {
   title: "Accept invite",
@@ -19,6 +20,16 @@ export default async function InvitePage(props: {
     token ? retrieveInvite(token) : null,
     retrieveCustomer(),
   ])
+
+  // The invitee is logged in and already joined. This also covers the page
+  // re-rendering right after a successful accept, before the client redirects.
+  if (
+    invite?.status === "accepted" &&
+    customer?.employee &&
+    customer.email.toLowerCase() === invite.email.toLowerCase()
+  ) {
+    redirect(`/${countryCode}/account/company`)
+  }
 
   return (
     <div className="flex justify-center items-center bg-neutral-100 p-6 m-2 min-h-[80vh]">

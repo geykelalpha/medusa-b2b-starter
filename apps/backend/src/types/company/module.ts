@@ -59,6 +59,7 @@ export interface ModuleEmployee {
   id: string;
   spending_limit: number;
   is_admin: boolean;
+  is_owner: boolean;
   company_id: string;
   created_at: Date;
   updated_at: Date;
@@ -71,6 +72,7 @@ export type ModuleCreateEmployee = {
   spending_limit: number;
   is_admin: boolean;
   company_id: string;
+  is_owner?: boolean;
 };
 
 export interface ModuleUpdateEmployee extends Partial<ModuleEmployee> {

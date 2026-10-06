@@ -32,9 +32,7 @@ medusaIntegrationTestRunner({
       storeHeaders = generateStoreHeaders({ publishableKey });
       const res = await createStoreUser({ api, storeHeaders });
       customerToken = res.token;
-      console.log("vic logs customerToken", customerToken);
       storeHeaders.headers["Authorization"] = `Bearer ${customerToken}`;
-      console.log("vic logs storeHeaders", storeHeaders);
       region = await regionSeeder({ api, adminHeaders, data: {} });
 
       salesChannel = await salesChannelSeeder({
@@ -89,7 +87,7 @@ medusaIntegrationTestRunner({
         );
 
         expect(response.status).toEqual(200);
-        expect(response.data.companies[0]).toMatchObject({
+        expect(response.data.company).toMatchObject({
           id: expect.any(String),
           name: "Test Company",
           email: "test@company.com",
@@ -126,7 +124,7 @@ medusaIntegrationTestRunner({
         );
 
         const response2 = await api.get(
-          `/store/companies/${response1.data.companies[0].id}`,
+          `/store/companies/${response1.data.company.id}`,
           storeHeaders
         );
 
@@ -178,7 +176,7 @@ medusaIntegrationTestRunner({
           storeHeaders
         );
 
-        company1 = response.data.companies[0];
+        company1 = response.data.company;
       });
 
       it("successfully updates a company", async () => {
@@ -231,7 +229,6 @@ medusaIntegrationTestRunner({
     });
 
     describe("DELETE /store/companies/:id", () => {
-      console.log("vic logs storeHeaders", storeHeaders);
       let company1;
 
       beforeEach(async () => {
@@ -253,7 +250,7 @@ medusaIntegrationTestRunner({
           storeHeaders
         );
 
-        company1 = response.data.companies[0];
+        company1 = response.data.company;
       });
 
       it("successfully deletes a company", async () => {

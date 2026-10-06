@@ -121,19 +121,21 @@ const AccountNav = ({
                     </LocalizedClientLink>
                   </li>
                 )}
-                <li>
-                  <LocalizedClientLink
-                    href="/account/quotes"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
-                    data-testid="quotes-link"
-                  >
-                    <div className="flex items-center gap-x-2">
-                      <FilePlus size={16} />
-                      <span>Quotes</span>
-                    </div>
-                    <ChevronDown className="transform -rotate-90" />
-                  </LocalizedClientLink>
-                </li>
+                {customer?.employee && (
+                  <li>
+                    <LocalizedClientLink
+                      href="/account/quotes"
+                      className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                      data-testid="quotes-link"
+                    >
+                      <div className="flex items-center gap-x-2">
+                        <FilePlus size={16} />
+                        <span>Quotes</span>
+                      </div>
+                      <ChevronDown className="transform -rotate-90" />
+                    </LocalizedClientLink>
+                  </li>
+                )}
                 <li>
                   <button
                     type="button"
@@ -217,15 +219,17 @@ const AccountNav = ({
                 </AccountNavLink>
               </li>
             )}
-            <li>
-              <AccountNavLink
-                href="/account/quotes"
-                route={route!}
-                data-testid="quotes-link"
-              >
-                Quotes
-              </AccountNavLink>
-            </li>
+            {customer?.employee && (
+              <li>
+                <AccountNavLink
+                  href="/account/quotes"
+                  route={route!}
+                  data-testid="quotes-link"
+                >
+                  Quotes
+                </AccountNavLink>
+              </li>
+            )}
             <li className="text-neutral-400 hover:text-neutral-950">
               <button
                 type="button"

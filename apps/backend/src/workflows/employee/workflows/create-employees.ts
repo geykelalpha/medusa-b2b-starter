@@ -4,7 +4,12 @@ import { createRemoteLinkStep } from "@medusajs/medusa/core-flows";
 import { createWorkflow, WorkflowResponse } from "@medusajs/framework/workflows-sdk";
 import { COMPANY_MODULE } from "../../../modules/company";
 import { ModuleCreateEmployee, ModuleEmployee } from "../../../types";
-import { createEmployeesStep, setAdminRoleStep } from "../steps";
+import {
+  claimCompanyOwnershipStep,
+  createEmployeesStep,
+  setAdminRoleStep,
+  validateCustomerCanJoinCompanyStep,
+} from "../steps";
 import { addEmployeeToCustomerGroupStep } from "../steps/add-employee-to-customer-group";
 
 type WorkflowInput = {
@@ -15,6 +20,8 @@ type WorkflowInput = {
 export const createEmployeesWorkflow = createWorkflow(
   "create-employees",
   function (input: WorkflowInput): WorkflowResponse<ModuleEmployee> {
+    validateCustomerCanJoinCompanyStep({ customer_id: input.customerId });
+
     const employee = createEmployeesStep(input.employeeData);
 
     createRemoteLinkStep([
@@ -32,6 +39,12 @@ export const createEmployeesWorkflow = createWorkflow(
       setAdminRoleStep({
         employeeId: employee.id,
         customerId: input.customerId,
+      });
+
+      // The first admin of a company without an owner becomes its owner
+      claimCompanyOwnershipStep({
+        employee_id: employee.id,
+        company_id: input.employeeData.company_id,
       });
     });
 

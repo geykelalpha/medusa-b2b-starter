@@ -14,6 +14,7 @@ import { useAdminCustomerGroups, useCompany } from "../../../hooks/api";
 import { formatAmount } from "../../../utils";
 import { CompanyActionsMenu } from "../components";
 import {
+  EmployeeAddExistingDrawer,
   EmployeeCreateDrawer,
   EmployeeInvitesSection,
   EmployeesActionsMenu,
@@ -149,7 +150,10 @@ const CompanyDetails = () => {
                   Employees
                 </Heading>
               </div>
-              <EmployeeCreateDrawer company={company} />
+              <div className="flex items-center gap-2">
+                <EmployeeAddExistingDrawer company={company} />
+                <EmployeeCreateDrawer company={company} />
+              </div>
             </div>
             {company?.employees && company?.employees.length > 0 ? (
               <Table>
@@ -191,6 +195,11 @@ const CompanyDetails = () => {
                             Admin
                           </Badge>
                         )}
+                        {employee.is_owner && (
+                          <Badge size="2xsmall" color="blue">
+                            Owner
+                          </Badge>
+                        )}
                       </Table.Cell>
                       <Table.Cell>{employee.customer?.email}</Table.Cell>
                       <Table.Cell>
@@ -218,7 +227,7 @@ const CompanyDetails = () => {
                       No records
                     </Text>
                     <Text className="txt-small text-ui-fg-muted">
-                      This company doesn't have any employees yet. Invite one to get started.
+                      This company doesn't have any employees yet. Invite one or add an existing customer to get started.
                     </Text>
                   </div>
                 </div>

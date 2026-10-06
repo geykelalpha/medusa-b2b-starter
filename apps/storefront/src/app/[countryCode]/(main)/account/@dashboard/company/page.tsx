@@ -6,20 +6,42 @@ import ApprovalSettingsCard from "@/modules/account/components/approval-settings
 import CompanyCard from "@/modules/account/components/company-card"
 import EmployeesCard from "@/modules/account/components/employees-card"
 import InviteEmployeeCard from "@/modules/account/components/invite-employee-card"
+import NoCompanyCard from "@/modules/account/components/no-company-card"
 import { Heading } from "@medusajs/ui"
 import { notFound } from "next/navigation"
 
-export default async function Company() {
+export default async function Company({
+  searchParams,
+}: {
+  searchParams: Promise<{ company_error?: string }>
+}) {
   const customer = await retrieveCustomer()
   const regions = await listRegions()
 
-  if (!customer || !customer?.employee?.company) return notFound()
+  if (!customer) return notFound()
 
-  const isAdmin = customer.employee.is_admin
+  const employee = customer.employee
+
+  if (!employee?.company_id) {
+    const { company_error } = await searchParams
+
+    return (
+      <div className="w-full">
+        <div className="mb-8 flex flex-col gap-y-4">
+          <Heading level="h2" className="text-lg text-neutral-950">
+            Company
+          </Heading>
+          <NoCompanyCard regions={regions} signupFailed={!!company_error} />
+        </div>
+      </div>
+    )
+  }
+
+  const isAdmin = employee.is_admin
 
   const [company, invites] = await Promise.all([
-    retrieveCompany(customer.employee.company.id),
-    isAdmin ? listInvites(customer.employee.company.id) : [],
+    retrieveCompany(employee.company_id),
+    isAdmin ? listInvites(employee.company_id) : [],
   ])
 
   return (

@@ -17,8 +17,11 @@ export default async function Orders() {
   const customer = await retrieveCustomer()
   const orders = await listOrders()
 
-  const { approval_settings } =
-    (await retrieveCompany(customer?.employee?.company_id!)) || {}
+  const companyId = customer?.employee?.company_id
+
+  const { approval_settings } = companyId
+    ? await retrieveCompany(companyId)
+    : { approval_settings: undefined }
 
   const isAdmin = !!customer?.employee?.is_admin
 

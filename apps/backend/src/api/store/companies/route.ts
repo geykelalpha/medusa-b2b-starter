@@ -3,32 +3,39 @@ import type {
   MedusaResponse,
 } from "@medusajs/framework";
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
-import { createCompaniesWorkflow } from "../../../workflows/company/workflows/create-companies";
+import { createCompanyForCustomerWorkflow } from "../../../workflows/company/workflows/create-company-for-customer";
+import { ModuleCreateCompany } from "../../../types";
 import { StoreCreateCompanyType } from "./validators";
 
+/**
+ * Creates a company for the logged-in customer and makes them its admin.
+ */
 export const POST = async (
-  req: AuthenticatedMedusaRequest<
-    StoreCreateCompanyType | StoreCreateCompanyType[]
-  >,
+  req: AuthenticatedMedusaRequest<StoreCreateCompanyType>,
   res: MedusaResponse
 ) => {
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
 
-  const { result: createdCompanies } = await createCompaniesWorkflow.run({
-    input: Array.isArray(req.validatedBody)
-      ? req.validatedBody.map((company) => ({ ...company }))
-      : [{ ...req.validatedBody }],
+  const {
+    result: { company: createdCompany },
+  } = await createCompanyForCustomerWorkflow.run({
+    input: {
+      customer_id: req.auth_context.actor_id,
+      company: req.validatedBody as ModuleCreateCompany,
+    },
     container: req.scope,
   });
 
-  const { data: companies } = await query.graph(
+  const {
+    data: [company],
+  } = await query.graph(
     {
-      entity: "companies",
+      entity: "company",
       fields: req.queryConfig.fields,
-      filters: { id: createdCompanies.map((company) => company.id) },
+      filters: { id: createdCompany.id },
     },
     { throwIfKeyNotFound: true }
   );
 
-  res.json({ companies });
+  res.json({ company });
 };

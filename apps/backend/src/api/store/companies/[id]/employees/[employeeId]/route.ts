@@ -1,4 +1,8 @@
-import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
+import {
+  AuthenticatedMedusaRequest,
+  MedusaRequest,
+  MedusaResponse,
+} from "@medusajs/framework";
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
 import {
   deleteEmployeesWorkflow,
@@ -35,7 +39,7 @@ export const GET = async (
 };
 
 export const POST = async (
-  req: MedusaRequest<StoreUpdateEmployeeType>,
+  req: AuthenticatedMedusaRequest<StoreUpdateEmployeeType>,
   res: MedusaResponse
 ) => {
   const { id, employeeId } = req.params;
@@ -48,6 +52,7 @@ export const POST = async (
       company_id: id,
       spending_limit,
       is_admin,
+      requested_by_customer_id: req.auth_context.actor_id,
     },
     container: req.scope,
   });
@@ -71,10 +76,10 @@ export const POST = async (
 };
 
 export const DELETE = async (req: MedusaRequest, res: MedusaResponse) => {
-  const { employeeId } = req.params;
+  const { id, employeeId } = req.params;
 
   await deleteEmployeesWorkflow.run({
-    input: [employeeId],
+    input: { company_id: id, employee_ids: [employeeId] },
     container: req.scope,
   });
 

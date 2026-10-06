@@ -1,13 +1,19 @@
 "use client"
 
-import { currencySymbolMap } from "@/lib/constants"
 import { signup } from "@/lib/data/customer"
+import {
+  CompanyFieldName,
+  CompanyFieldValues,
+  emptyCompanyFieldValues,
+  isCompanyFieldValuesValid,
+} from "@/lib/util/company-form"
+import CompanyFields from "@/modules/account/components/company-fields"
 import { LOGIN_VIEW } from "@/modules/account/templates/login-template"
 import ErrorMessage from "@/modules/checkout/components/error-message"
 import { SubmitButton } from "@/modules/checkout/components/submit-button"
 import Input from "@/modules/common/components/input"
 import { HttpTypes } from "@medusajs/types"
-import { Checkbox, Label, Select, Text } from "@medusajs/ui"
+import { Checkbox, Label, Text } from "@medusajs/ui"
 import { ChangeEvent, useActionState, useState } from "react"
 
 type Props = {
@@ -19,53 +25,26 @@ interface FormData {
   email: string
   first_name: string
   last_name: string
-  company_name: string
   password: string
-  company_address: string
-  company_city: string
-  company_state: string
-  company_zip: string
-  company_country: string
-  currency_code: string
 }
 
 const initialFormData: FormData = {
   email: "",
   first_name: "",
   last_name: "",
-  company_name: "",
   password: "",
-  company_address: "",
-  company_city: "",
-  company_state: "",
-  company_zip: "",
-  company_country: "",
-  currency_code: "",
-}
-
-const placeholder = ({
-  placeholder,
-  required,
-}: {
-  placeholder: string
-  required: boolean
-}) => {
-  return (
-    <span className="text-ui-fg-muted">
-      {placeholder}
-      {required && <span className="text-ui-fg-error">*</span>}
-    </span>
-  )
 }
 
 const Register = ({ setCurrentView, regions }: Props) => {
   const [message, formAction] = useActionState(signup, null)
   const [termsAccepted, setTermsAccepted] = useState(false)
+  const [isBusiness, setIsBusiness] = useState(false)
   const [formData, setFormData] = useState<FormData>(initialFormData)
+  const [companyData, setCompanyData] = useState<CompanyFieldValues>(
+    emptyCompanyFieldValues
+  )
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
@@ -73,8 +52,8 @@ const Register = ({ setCurrentView, regions }: Props) => {
     }))
   }
 
-  const handleSelectChange = (name: keyof FormData) => (value: string) => {
-    setFormData((prev) => ({
+  const handleCompanyChange = (name: CompanyFieldName, value: string) => {
+    setCompanyData((prev) => ({
       ...prev,
       [name]: value,
     }))
@@ -85,21 +64,8 @@ const Register = ({ setCurrentView, regions }: Props) => {
     !!formData.email &&
     !!formData.first_name &&
     !!formData.last_name &&
-    !!formData.company_name &&
     !!formData.password &&
-    !!formData.company_address &&
-    !!formData.company_city &&
-    !!formData.company_zip &&
-    !!formData.company_country &&
-    !!formData.currency_code
-
-  const countryNames = regions
-    .flatMap((region) =>
-      region.countries?.map((country) => country?.display_name || country?.name)
-    )
-    .filter((country) => country !== undefined)
-
-  const currencies = regions.map((region) => region.currency_code)
+    (!isBusiness || isCompanyFieldValuesValid(companyData))
 
   return (
     <div
@@ -109,7 +75,7 @@ const Register = ({ setCurrentView, regions }: Props) => {
       <Text className="text-4xl text-neutral-950 text-left mb-4">
         Create your
         <br />
-        company account.
+        account.
       </Text>
       <form className="w-full flex flex-col" action={formAction}>
         <div className="flex flex-col w-full gap-y-4">
@@ -145,16 +111,6 @@ const Register = ({ setCurrentView, regions }: Props) => {
             onChange={handleChange}
           />
           <Input
-            label="Company name"
-            name="company_name"
-            required
-            autoComplete="organization"
-            data-testid="company-name-input"
-            className="bg-white"
-            value={formData.company_name}
-            onChange={handleChange}
-          />
-          <Input
             label="Password"
             name="password"
             required
@@ -165,93 +121,32 @@ const Register = ({ setCurrentView, regions }: Props) => {
             value={formData.password}
             onChange={handleChange}
           />
-          <Input
-            label="Company address"
-            name="company_address"
-            required
-            autoComplete="address"
-            data-testid="company-address-input"
-            className="bg-white"
-            value={formData.company_address}
-            onChange={handleChange}
+          <input
+            type="hidden"
+            name="is_business"
+            value={isBusiness ? "true" : "false"}
           />
-          <Input
-            label="Company city"
-            name="company_city"
-            required
-            autoComplete="city"
-            data-testid="company-city-input"
-            className="bg-white"
-            value={formData.company_city}
-            onChange={handleChange}
-          />
-          <Input
-            label="Company state"
-            name="company_state"
-            autoComplete="state"
-            data-testid="company-state-input"
-            className="bg-white"
-            value={formData.company_state}
-            onChange={handleChange}
-          />
-          <Input
-            label="Company zip"
-            name="company_zip"
-            required
-            autoComplete="postal-code"
-            data-testid="company-zip-input"
-            className="bg-white"
-            value={formData.company_zip}
-            onChange={handleChange}
-          />
-          <Select
-            name="company_country"
-            required
-            autoComplete="country"
-            data-testid="company-country-input"
-            value={formData.company_country}
-            onValueChange={handleSelectChange("company_country")}
-          >
-            <Select.Trigger className="rounded-full h-10 px-4">
-              <Select.Value
-                placeholder={placeholder({
-                  placeholder: "Select a country",
-                  required: true,
-                })}
-              />
-            </Select.Trigger>
-            <Select.Content>
-              {countryNames?.map((country) => (
-                <Select.Item key={country} value={country}>
-                  {country}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select>
-          <Select
-            name="currency_code"
-            required
-            autoComplete="currency"
-            data-testid="company-currency-input"
-            value={formData.currency_code}
-            onValueChange={handleSelectChange("currency_code")}
-          >
-            <Select.Trigger className="rounded-full h-10 px-4">
-              <Select.Value
-                placeholder={placeholder({
-                  placeholder: "Select a currency",
-                  required: true,
-                })}
-              />
-            </Select.Trigger>
-            <Select.Content>
-              {[...new Set(currencies)].map((currency) => (
-                <Select.Item key={currency} value={currency}>
-                  {currency.toUpperCase()} ({currencySymbolMap[currency]})
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select>
+          <div className="flex items-center gap-2 pt-2">
+            <Checkbox
+              id="is-business-checkbox"
+              data-testid="is-business-checkbox"
+              checked={isBusiness}
+              onCheckedChange={(checked) => setIsBusiness(!!checked)}
+            />
+            <Label
+              className="flex items-center text-ui-fg-base !text-xs hover:cursor-pointer !transform-none"
+              htmlFor="is-business-checkbox"
+            >
+              I&apos;m registering a business
+            </Label>
+          </div>
+          {isBusiness && (
+            <CompanyFields
+              values={companyData}
+              onChange={handleCompanyChange}
+              regions={regions}
+            />
+          )}
         </div>
         <div className="border-b border-neutral-200 my-6" />
         <ErrorMessage error={message} data-testid="register-error" />

@@ -15,6 +15,7 @@ import {
 } from "@tanstack/react-query";
 import { sdk } from "../../lib/client";
 import { queryKeysFactory } from "../../lib/query-key-factory";
+import { companyQueryKey } from "./companies";
 
 export const employeeQueryKey = queryKeysFactory("employee");
 
@@ -47,18 +48,23 @@ export const useEmployees = (
   });
 };
 
+type AdminAddEmployee = Omit<AdminCreateEmployee, "company_id">;
+
+/**
+ * Adds an existing registered customer to the company as an employee.
+ */
 export const useCreateEmployee = (
   companyId: string,
   options?: UseMutationOptions<
     AdminEmployeeResponse,
     FetchError,
-    AdminCreateEmployee
+    AdminAddEmployee
   >
 ) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (employee: AdminCreateEmployee) =>
+    mutationFn: (employee: AdminAddEmployee) =>
       sdk.client.fetch<AdminEmployeeResponse>(
         `/admin/companies/${companyId}/employees`,
         {
@@ -72,6 +78,9 @@ export const useCreateEmployee = (
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({
         queryKey: employeeQueryKey.list(companyId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKey.detail(companyId),
       });
       options?.onSuccess?.(data, variables, context);
     },

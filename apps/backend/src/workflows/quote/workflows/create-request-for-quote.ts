@@ -9,6 +9,7 @@ import {
   transform,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
+import { validateCustomerHasCompanyStep } from "../steps/validate-customer-has-company";
 import { createQuotesWorkflow } from "./create-quote";
 
 /*
@@ -24,6 +25,8 @@ import { createQuotesWorkflow } from "./create-quote";
 export const createRequestForQuoteWorkflow = createWorkflow(
   "create-request-for-quote",
   function (input: { cart_id: string; customer_id: string }) {
+    validateCustomerHasCompanyStep({ customer_id: input.customer_id });
+
     const cart = useRemoteQueryStep({
       entry_point: "cart",
       fields: [
@@ -46,7 +49,7 @@ export const createRequestForQuoteWorkflow = createWorkflow(
 
     const customer = useRemoteQueryStep({
       entry_point: "customer",
-      fields: ["id", "customer"],
+      fields: ["id", "email"],
       variables: { id: input.customer_id },
       list: false,
       throw_if_key_not_found: true,

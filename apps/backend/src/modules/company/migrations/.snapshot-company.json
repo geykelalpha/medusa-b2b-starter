@@ -330,6 +330,22 @@
           "enumItems": [],
           "mappedType": "boolean"
         },
+        "is_owner": {
+          "name": "is_owner",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
         "company_id": {
           "name": "company_id",
           "type": "text",
@@ -431,6 +447,15 @@
           "primary": false,
           "unique": false,
           "expression": "CREATE INDEX IF NOT EXISTS \"IDX_employee_deleted_at\" ON \"employee\" (\"deleted_at\") WHERE deleted_at IS NULL"
+        },
+        {
+          "keyName": "IDX_employee_company_id_unique",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE UNIQUE INDEX IF NOT EXISTS \"IDX_employee_company_id_unique\" ON \"employee\" (\"company_id\") WHERE is_owner = true AND deleted_at IS NULL"
         },
         {
           "keyName": "employee_pkey",

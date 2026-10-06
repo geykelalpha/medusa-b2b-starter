@@ -1,7 +1,11 @@
 "use client"
 
 import { currencySymbolMap } from "@/lib/constants"
-import { deleteEmployee, updateEmployee } from "@/lib/data/companies"
+import {
+  deleteEmployee,
+  transferCompanyOwnership,
+  updateEmployee,
+} from "@/lib/data/companies"
 import {
   getOrderTotalInSpendWindow,
   getSpendWindow,
@@ -67,6 +71,61 @@ const RemoveEmployeePrompt = ({ employee }: { employee: QueryEmployee }) => {
   )
 }
 
+const TransferOwnershipPrompt = ({
+  employee,
+}: {
+  employee: QueryEmployee
+}) => {
+  const [isTransferring, setIsTransferring] = useState(false)
+
+  const handleTransfer = async () => {
+    setIsTransferring(true)
+    const { error } = await transferCompanyOwnership(
+      employee.company_id,
+      employee.id
+    )
+    setIsTransferring(false)
+
+    if (error) {
+      toast.error(error)
+      return
+    }
+
+    toast.success("Ownership transferred")
+  }
+
+  return (
+    <Prompt>
+      <Prompt.Trigger asChild>
+        <Button variant="transparent" disabled={isTransferring}>
+          Make owner
+        </Button>
+      </Prompt.Trigger>
+      <Prompt.Content>
+        <Prompt.Header>
+          <Prompt.Title>Transfer Ownership</Prompt.Title>
+          <Prompt.Description>
+            Make <strong>{employee.customer.email}</strong> the owner of your
+            company? You will stay an admin, but only the new owner can
+            transfer ownership again or remove you.
+          </Prompt.Description>
+        </Prompt.Header>
+        <Prompt.Footer>
+          <Prompt.Cancel className="h-10 rounded-full shadow-borders-base">
+            Cancel
+          </Prompt.Cancel>
+          <Prompt.Action
+            className="h-10 px-4 rounded-full shadow-none"
+            onClick={handleTransfer}
+          >
+            Transfer
+          </Prompt.Action>
+        </Prompt.Footer>
+      </Prompt.Content>
+    </Prompt>
+  )
+}
+
 const Employee = ({
   employee,
   company,
@@ -88,7 +147,14 @@ const Employee = ({
   })
 
   const isCurrentUser = employee.customer.id === customer?.id
-  const canManage = !!customer?.employee?.is_admin
+  const isCurrentUserOwner = !!customer?.employee?.is_owner
+  // Only the owner can edit the owner's own record
+  const canManage =
+    !!customer?.employee?.is_admin && (!employee.is_owner || isCurrentUser)
+  // The owner can't be removed until ownership is transferred
+  const canRemove = !isCurrentUser && !employee.is_owner
+  const canMakeOwner =
+    isCurrentUserOwner && !isCurrentUser && employee.is_admin
 
   const handleSubmit = async () => {
     const updateData = {
@@ -121,11 +187,18 @@ const Employee = ({
           <Text className=" text-neutral-950 font-medium">
             {employee.customer.first_name} {employee.customer.last_name}{" "}
             {isCurrentUser && "(You)"}{" "}
-            {employee.is_admin && (
+            {employee.is_owner ? (
               <>
                 {" • "}
-                <span className="text-blue-500">Admin</span>
+                <span className="text-blue-500">Owner</span>
               </>
+            ) : (
+              employee.is_admin && (
+                <>
+                  {" • "}
+                  <span className="text-blue-500">Admin</span>
+                </>
+              )
             )}
           </Text>
           <div className="flex gap-x-2 small:flex-row flex-col">
@@ -167,7 +240,8 @@ const Employee = ({
               </>
             ) : (
               <>
-                {!isCurrentUser && <RemoveEmployeePrompt employee={employee} />}
+                {canMakeOwner && <TransferOwnershipPrompt employee={employee} />}
+                {canRemove && <RemoveEmployeePrompt employee={employee} />}
                 <Button
                   variant="secondary"
                   onClick={() => setIsEditing((prev) => !prev)}
@@ -216,7 +290,8 @@ const Employee = ({
             className="bg-white"
             name="permissions"
             value={employeeData.is_admin ? "true" : "false"}
-            disabled={!customer?.employee?.is_admin}
+            // The owner is always an admin
+            disabled={!customer?.employee?.is_admin || employee.is_owner}
             onChange={(e) => {
               setEmployeeData({
                 ...employeeData,
