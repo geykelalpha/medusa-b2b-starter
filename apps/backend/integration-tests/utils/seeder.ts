@@ -25,6 +25,8 @@ export async function productSeeder({ api, adminHeaders, data }) {
       {
         title: `Test Product`,
         handle: `test-product`,
+        // Draft products can't be added to carts
+        status: "published",
         options: [
           { title: "size", values: ["large", "small"] },
           { title: "color", values: ["green"] },
@@ -46,6 +48,7 @@ export async function productSeeder({ api, adminHeaders, data }) {
             },
           },
         ],
+        ...data,
       },
       adminHeaders
     )
@@ -70,6 +73,27 @@ export async function cartSeeder({ api, storeHeaders, data }) {
         ...data,
       },
       storeHeaders
-    )
+    ).catch((e) => {
+      throw new Error(`cartSeeder: ${JSON.stringify(e.response?.data)}`);
+    })
   ).data.cart;
+}
+
+/**
+ * Creates a company for the logged-in customer in `storeHeaders`, making them
+ * its admin and owner. Company-only features like quotes need this.
+ */
+export async function companySeeder({ api, storeHeaders, data }) {
+  return (
+    await api.post(
+      "/store/companies",
+      {
+        name: "Test Company",
+        email: "test@company.com",
+        currency_code: "usd",
+        ...data,
+      },
+      storeHeaders
+    )
+  ).data.company;
 }

@@ -213,7 +213,9 @@ medusaIntegrationTestRunner({
         });
       });
 
-      it("should throw an error when company does not exist", async () => {
+      // The company admin check runs first, so an unknown company is
+      // forbidden rather than not found
+      it("rejects a company the customer isn't an admin of", async () => {
         const { response } = await api
           .post(
             `/store/companies/does-not-exist`,
@@ -222,9 +224,7 @@ medusaIntegrationTestRunner({
           )
           .catch((e) => e);
 
-        expect(response.data).toMatchObject({
-          type: "not_found",
-        });
+        expect(response.status).toEqual(403);
       });
     });
 
@@ -262,12 +262,12 @@ medusaIntegrationTestRunner({
         expect(response.status).toEqual(204);
       });
 
-      it("should throw an error when company does not exist", async () => {
-        const response = await api
+      it("rejects a company the customer isn't an admin of", async () => {
+        const { response } = await api
           .delete(`/store/companies/does-not-exist`, storeHeaders)
           .catch((e) => e);
 
-        expect(response.status).toEqual(204);
+        expect(response.status).toEqual(403);
       });
     });
   },
