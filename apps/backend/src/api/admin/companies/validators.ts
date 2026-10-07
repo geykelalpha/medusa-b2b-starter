@@ -75,6 +75,7 @@ export const AdminCreateEmployee = z
       })
       .optional(),
     is_admin: z.boolean().optional(),
+    parent_employee_id: z.string().nullable().optional(),
     customer_id: z.string(),
   })
   .strict();
@@ -82,7 +83,8 @@ export const AdminCreateEmployee = z
 export type AdminUpdateEmployeeType = z.infer<typeof AdminUpdateEmployee>;
 export const AdminUpdateEmployee = z
   .object({
-    id: z.string(),
+    // Unused: the employee comes from the URL
+    id: z.string().optional(),
     spending_limit: z.number().optional(),
     raw_spending_limit: z
       .object({
@@ -91,6 +93,7 @@ export const AdminUpdateEmployee = z
       })
       .optional(),
     is_admin: z.boolean().optional(),
+    parent_employee_id: z.string().nullable().optional(),
   })
   .strict();
 
@@ -151,6 +154,7 @@ export const AdminCreateEmployeeInvite = z
     phone: z.string().optional().nullable(),
     spending_limit: z.number().min(0).optional(),
     is_admin: z.boolean().optional(),
+    parent_employee_id: z.string().nullable().optional(),
   })
   .strict();
 

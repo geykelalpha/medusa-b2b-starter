@@ -1,24 +1,15 @@
-import { ExclamationCircle } from "@medusajs/icons";
 import {
   Avatar,
   Badge,
   Container,
   Heading,
   Table,
-  Text,
   Toaster,
 } from "@medusajs/ui";
-import { QueryEmployee } from "../../../../types";
 import { useParams } from "react-router-dom";
 import { useAdminCustomerGroups, useCompany } from "../../../hooks/api";
-import { formatAmount } from "../../../utils";
 import { CompanyActionsMenu } from "../components";
-import {
-  EmployeeAddExistingDrawer,
-  EmployeeCreateDrawer,
-  EmployeeInvitesSection,
-  EmployeesActionsMenu,
-} from "../components/employees";
+import { EmployeesTreeSection } from "../components/employees";
 
 const CompanyDetails = () => {
   const { companyId } = useParams();
@@ -141,102 +132,7 @@ const CompanyDetails = () => {
           </>
         )}
       </Container>
-      <Container className="flex flex-col p-0 overflow-hidden">
-        {!isPending && (
-          <>
-            <div className="flex items-center gap-2 px-6 py-4 justify-between border-b border-gray-200">
-              <div className="flex items-center gap-2">
-                <Heading className="font-sans font-medium h1-core">
-                  Employees
-                </Heading>
-              </div>
-              <div className="flex items-center gap-2">
-                <EmployeeAddExistingDrawer company={company} />
-                <EmployeeCreateDrawer company={company} />
-              </div>
-            </div>
-            {company?.employees && company?.employees.length > 0 ? (
-              <Table>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.HeaderCell></Table.HeaderCell>
-                    <Table.HeaderCell>Name</Table.HeaderCell>
-                    <Table.HeaderCell>Email</Table.HeaderCell>
-                    <Table.HeaderCell>Spending Limit</Table.HeaderCell>
-                    <Table.HeaderCell>Actions</Table.HeaderCell>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {company?.employees.map((employee: QueryEmployee) => (
-                    <Table.Row
-                      key={employee.id}
-                      onClick={() => {
-                        window.location.href = `/app/customers/${
-                          employee!.customer!.id
-                        }`;
-                      }}
-                      className="cursor-pointer"
-                    >
-                      <Table.Cell className="w-6 h-6 items-center justify-center">
-                        <Avatar
-                          fallback={
-                            employee.customer?.first_name?.charAt(0) || ""
-                          }
-                        />
-                      </Table.Cell>
-                      <Table.Cell className="flex w-fit gap-2 items-center">
-                        {employee.customer?.first_name}{" "}
-                        {employee.customer?.last_name}
-                        {employee.is_admin && (
-                          <Badge
-                            size="2xsmall"
-                            color={employee.is_admin ? "green" : "grey"}
-                          >
-                            Admin
-                          </Badge>
-                        )}
-                        {employee.is_owner && (
-                          <Badge size="2xsmall" color="blue">
-                            Owner
-                          </Badge>
-                        )}
-                      </Table.Cell>
-                      <Table.Cell>{employee.customer?.email}</Table.Cell>
-                      <Table.Cell>
-                        {formatAmount(
-                          employee.spending_limit,
-                          company?.currency_code || "USD"
-                        )}
-                      </Table.Cell>
-                      <Table.Cell onClick={(e) => e.stopPropagation()}>
-                        <EmployeesActionsMenu
-                          company={company}
-                          employee={employee}
-                        />
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table>
-            ) : (
-              <div className="flex h-[400px] w-full flex-col items-center justify-center gap-y-4">
-                <div className="flex flex-col items-center gap-y-3">
-                  <ExclamationCircle />
-                  <div className="flex flex-col items-center gap-y-1">
-                    <Text className="font-medium font-sans txt-compact-small">
-                      No records
-                    </Text>
-                    <Text className="txt-small text-ui-fg-muted">
-                      This company doesn't have any employees yet. Invite one or add an existing customer to get started.
-                    </Text>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </Container>
-      <EmployeeInvitesSection company={company} />
+      {!isPending && <EmployeesTreeSection company={company} />}
       <Toaster />
     </div>
   );

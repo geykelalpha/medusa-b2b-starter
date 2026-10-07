@@ -30,6 +30,7 @@ export type ModuleEmployee = {
   spending_limit: number
   is_admin: boolean
   is_owner: boolean
+  parent_employee_id: string | null
   created_at?: string
   updated_at?: string
   deleted_at?: string | null
@@ -50,6 +51,7 @@ export type ModuleEmployeeInvite = {
   expires_at: string
   accepted_at: string | null
   employee_id: string | null
+  parent_employee_id: string | null
   created_at?: string
   updated_at?: string
 }

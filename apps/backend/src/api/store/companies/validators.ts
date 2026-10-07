@@ -64,6 +64,7 @@ export const StoreUpdateEmployee = z
       })
       .optional(),
     is_admin: z.boolean().optional(),
+    parent_employee_id: z.string().nullable().optional(),
   })
   .strict();
 
@@ -120,6 +121,7 @@ export const StoreCreateEmployeeInvite = z
     phone: z.string().optional().nullable(),
     spending_limit: z.number().min(0).optional(),
     is_admin: z.boolean().optional(),
+    parent_employee_id: z.string().nullable().optional(),
   })
   .strict();
 

@@ -14,6 +14,7 @@ import { CoolSwitch } from "../../../../components/common";
 import { useCreateEmployee } from "../../../../hooks/api";
 import { sdk } from "../../../../lib/client";
 import { currencySymbolMap } from "../../../../utils";
+import { EmployeeParentSelect } from "./employee-parent-select";
 
 type CustomerResult = {
   id: string;
@@ -25,19 +26,32 @@ type CustomerResult = {
 
 /**
  * Assigns an existing registered customer, who doesn't belong to a company
- * yet, to this company.
+ * yet, to this company. Opened at the top level or under a given employee
+ * (`defaultParentId`).
  */
 export function EmployeeAddExistingDrawer({
   company,
+  open,
+  onOpenChange: setOpen,
+  defaultParentId = null,
 }: {
   company: QueryCompany;
-}) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  defaultParentId?: string | null;
+}) {  const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selected, setSelected] = useState<CustomerResult | null>(null);
   const [spendingLimit, setSpendingLimit] = useState("0");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [parentId, setParentId] = useState<string | null>(defaultParentId);
+
+  // Pick up the preset parent each time the drawer opens
+  useEffect(() => {
+    if (open) {
+      setParentId(defaultParentId);
+    }
+  }, [open, defaultParentId]);
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedSearch(search), 300);
@@ -92,6 +106,7 @@ export function EmployeeAddExistingDrawer({
         customer_id: selected.id,
         spending_limit: spendingLimit ? parseInt(spendingLimit) : 0,
         is_admin: isAdmin,
+        parent_employee_id: parentId,
       });
     } catch {
       // The error is surfaced through `error`
@@ -106,11 +121,6 @@ export function EmployeeAddExistingDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <Drawer.Trigger asChild>
-        <Button variant="secondary" size="small">
-          Add existing customer
-        </Button>
-      </Drawer.Trigger>
       <Drawer.Content>
         <Drawer.Header>
           <Drawer.Title>Add Existing Customer</Drawer.Title>
@@ -179,6 +189,14 @@ export function EmployeeAddExistingDrawer({
                   })
                 )}
               </div>
+            </div>
+            <div className="flex flex-col gap-3">
+              <h2 className="h2-core">Placement</h2>
+              <EmployeeParentSelect
+                employees={company.employees ?? []}
+                value={parentId}
+                onChange={setParentId}
+              />
             </div>
             <div className="flex flex-col gap-3">
               <h2 className="h2-core">Permissions</h2>

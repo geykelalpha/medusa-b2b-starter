@@ -6,6 +6,7 @@ interface DeletePromptProps {
   loading: boolean;
   open: boolean;
   setOpen: (open: boolean) => void;
+  description?: string;
 }
 
 export const DeletePrompt = ({
@@ -13,6 +14,7 @@ export const DeletePrompt = ({
   loading,
   open,
   setOpen,
+  description = "Are you sure you want to delete this item? This action cannot be undone.",
 }: DeletePromptProps) => {
   const handleConfirmDelete = async () => {
     handleDelete();
@@ -23,10 +25,7 @@ export const DeletePrompt = ({
     <Prompt open={open} onOpenChange={setOpen}>
       <Prompt.Content className="p-4 pb-0 border-b shadow-ui-fg-shadow">
         <Prompt.Title>Confirm Deletion</Prompt.Title>
-        <Prompt.Description>
-          Are you sure you want to delete this item? This action cannot be
-          undone.
-        </Prompt.Description>
+        <Prompt.Description>{description}</Prompt.Description>
         <Prompt.Footer>
           <Button
             variant="danger"

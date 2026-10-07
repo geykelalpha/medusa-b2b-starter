@@ -20,6 +20,8 @@ export const EmployeeInvite = model
     accepted_at: model.dateTime().nullable(),
     invited_by: model.text().nullable(),
     employee_id: model.text().nullable(),
+    // Where the employee lands in the tree on accept. Null means top level.
+    parent_employee_id: model.text().nullable(),
     company: model.belongsTo(() => Company, {
       mappedBy: "invites",
     }),

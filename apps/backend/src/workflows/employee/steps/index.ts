@@ -10,3 +10,5 @@ export * from "./transfer-company-ownership";
 export * from "./validate-employee-update";
 export * from "./validate-employees-removable";
 export * from "./validate-ownership-transfer";
+export * from "./reparent-children";
+export * from "./validate-employee-parent";

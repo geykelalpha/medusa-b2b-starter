@@ -73,6 +73,7 @@ export const acceptEmployeeInviteWorkflow = createWorkflow(
             customer_id: customerId,
             spending_limit: invite.spending_limit,
             is_admin: invite.is_admin,
+            parent_employee_id: invite.parent_employee_id,
           },
           customerId,
         };

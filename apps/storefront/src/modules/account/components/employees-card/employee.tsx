@@ -10,6 +10,7 @@ import {
   getOrderTotalInSpendWindow,
   getSpendWindow,
 } from "@/lib/util/check-spending-limit"
+import { employeeName } from "@/lib/util/employee-tree"
 import { formatAmount } from "@/modules/common/components/amount-cell"
 import Button from "@/modules/common/components/button"
 import NativeSelect from "@/modules/common/components/native-select"
@@ -22,29 +23,38 @@ import {
 import { HttpTypes } from "@medusajs/types"
 import { CurrencyInput, Prompt, Text, clx, toast } from "@medusajs/ui"
 import { useState } from "react"
+import PlaceUnderSelect from "./place-under-select"
+import TreeToggle from "./tree-toggle"
 
-const RemoveEmployeePrompt = ({ employee }: { employee: QueryEmployee }) => {
+const RemoveEmployeePrompt = ({
+  employee,
+  childrenDestination,
+}: {
+  employee: QueryEmployee
+  /** Where the employee's children go, or null when it has none. */
+  childrenDestination: string | null
+}) => {
   const [isRemoving, setIsRemoving] = useState(false)
 
   const handleRemove = async () => {
     setIsRemoving(true)
-    const removed = await deleteEmployee(employee.company_id, employee.id)
-      .then(() => true)
-      .catch(() => false)
+    const { error } = await deleteEmployee(employee.company_id, employee.id)
     setIsRemoving(false)
 
-    if (!removed) {
-      toast.error("Error deleting employee")
+    if (error) {
+      toast.error(error)
       return
     }
 
-    toast.success("Employee deleted")
+    toast.success("Employee removed")
   }
 
   return (
     <Prompt variant="danger">
       <Prompt.Trigger asChild>
-        <Button variant="transparent">Remove</Button>
+        <Button variant="transparent" disabled={isRemoving}>
+          Remove
+        </Button>
       </Prompt.Trigger>
       <Prompt.Content>
         <Prompt.Header>
@@ -53,6 +63,8 @@ const RemoveEmployeePrompt = ({ employee }: { employee: QueryEmployee }) => {
             Are you sure you want to remove{" "}
             <strong>{employee.customer.email}</strong> from your team? They will
             no longer be able to purchase on behalf of your company.
+            {childrenDestination &&
+              ` Everyone under them will be moved ${childrenDestination}.`}
           </Prompt.Description>
         </Prompt.Header>
         <Prompt.Footer>
@@ -71,11 +83,7 @@ const RemoveEmployeePrompt = ({ employee }: { employee: QueryEmployee }) => {
   )
 }
 
-const TransferOwnershipPrompt = ({
-  employee,
-}: {
-  employee: QueryEmployee
-}) => {
+const TransferOwnershipPrompt = ({ employee }: { employee: QueryEmployee }) => {
   const [isTransferring, setIsTransferring] = useState(false)
 
   const handleTransfer = async () => {
@@ -106,8 +114,8 @@ const TransferOwnershipPrompt = ({
           <Prompt.Title>Transfer Ownership</Prompt.Title>
           <Prompt.Description>
             Make <strong>{employee.customer.email}</strong> the owner of your
-            company? You will stay an admin, but only the new owner can
-            transfer ownership again or remove you.
+            company? You will stay an admin, but only the new owner can transfer
+            ownership again or remove you.
           </Prompt.Description>
         </Prompt.Header>
         <Prompt.Footer>
@@ -131,11 +139,21 @@ const Employee = ({
   company,
   orders,
   customer,
+  depth,
+  childCount,
+  isCollapsed,
+  onToggle,
+  onInviteUnder,
 }: {
   employee: QueryEmployee
   company: QueryCompany
   orders: HttpTypes.StoreOrder[]
   customer: B2BCustomer | null
+  depth: number
+  childCount: number
+  isCollapsed: boolean
+  onToggle: () => void
+  onInviteUnder: (employee: QueryEmployee) => void
 }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -144,17 +162,38 @@ const Employee = ({
     company_id: employee.company_id,
     spending_limit: employee.spending_limit.toString(),
     is_admin: employee.is_admin,
+    parent_employee_id: employee.parent_employee_id,
   })
 
+  const employees = company.employees ?? []
   const isCurrentUser = employee.customer.id === customer?.id
+  const isViewerAdmin = !!customer?.employee?.is_admin
   const isCurrentUserOwner = !!customer?.employee?.is_owner
   // Only the owner can edit the owner's own record
-  const canManage =
-    !!customer?.employee?.is_admin && (!employee.is_owner || isCurrentUser)
+  const canManage = isViewerAdmin && (!employee.is_owner || isCurrentUser)
   // The owner can't be removed until ownership is transferred
   const canRemove = !isCurrentUser && !employee.is_owner
-  const canMakeOwner =
-    isCurrentUserOwner && !isCurrentUser && employee.is_admin
+  const canMakeOwner = isCurrentUserOwner && !isCurrentUser && employee.is_admin
+
+  const parent = employees.find((e) => e.id === employee.parent_employee_id)
+  const childrenDestination =
+    childCount > 0
+      ? parent
+        ? `under ${employeeName(parent)}`
+        : "to the top level"
+      : null
+
+  const startEditing = () => {
+    // Start from the current values, which may have changed since mount
+    setEmployeeData({
+      id: employee.id,
+      company_id: employee.company_id,
+      spending_limit: employee.spending_limit.toString(),
+      is_admin: employee.is_admin,
+      parent_employee_id: employee.parent_employee_id,
+    })
+    setIsEditing(true)
+  }
 
   const handleSubmit = async () => {
     const updateData = {
@@ -163,13 +202,11 @@ const Employee = ({
     }
 
     setIsSaving(true)
-    const updated = await updateEmployee(updateData as StoreUpdateEmployee)
-      .then(() => true)
-      .catch(() => false)
+    const { error } = await updateEmployee(updateData as StoreUpdateEmployee)
     setIsSaving(false)
 
-    if (!updated) {
-      toast.error("Error updating employee")
+    if (error) {
+      toast.error(error)
       return
     }
 
@@ -182,44 +219,67 @@ const Employee = ({
 
   return (
     <div className="flex flex-col">
-      <div className="flex justify-between p-4 border-b border-neutral-200">
-        <div className="flex flex-col">
-          <Text className=" text-neutral-950 font-medium">
-            {employee.customer.first_name} {employee.customer.last_name}{" "}
-            {isCurrentUser && "(You)"}{" "}
-            {employee.is_owner ? (
-              <>
-                {" • "}
-                <span className="text-blue-500">Owner</span>
-              </>
-            ) : (
-              employee.is_admin && (
+      <div className="flex justify-between gap-2 p-4 border-b border-neutral-200">
+        <div
+          className="flex items-start gap-2 min-w-0"
+          style={{ paddingLeft: depth * 24 }}
+        >
+          <TreeToggle
+            hasChildren={childCount > 0}
+            isCollapsed={isCollapsed}
+            onToggle={onToggle}
+          />
+          <div className="flex flex-col min-w-0">
+            <Text className=" text-neutral-950 font-medium">
+              {employee.customer.first_name} {employee.customer.last_name}{" "}
+              {isCurrentUser && "(You)"}{" "}
+              {employee.is_owner ? (
                 <>
                   {" • "}
-                  <span className="text-blue-500">Admin</span>
+                  <span className="text-blue-500">Owner</span>
                 </>
-              )
-            )}
-          </Text>
-          <div className="flex gap-x-2 small:flex-row flex-col">
-            <Text className=" text-neutral-500">{employee.customer.email}</Text>
-            <Text className=" text-neutral-500 hidden small:block">
-              {" • "}
+              ) : (
+                employee.is_admin && (
+                  <>
+                    {" • "}
+                    <span className="text-blue-500">Admin</span>
+                  </>
+                )
+              )}
+              {isCollapsed && childCount > 0 && (
+                <span className="text-neutral-500 font-normal">
+                  {" "}
+                  (+{childCount})
+                </span>
+              )}
             </Text>
-            <Text className=" text-neutral-500">{employee.customer.phone}</Text>
-            <Text className=" text-neutral-500 hidden small:block">
-              {" • "}
-            </Text>
-            <Text className=" text-neutral-500">
-              {amountSpent} /{" "}
-              {employee.spending_limit > 0
-                ? formatAmount(employee.spending_limit, company.currency_code!)
-                : "No limit"}{" "}
-              spent
-            </Text>
+            <div className="flex gap-x-2 small:flex-row flex-col">
+              <Text className=" text-neutral-500">
+                {employee.customer.email}
+              </Text>
+              <Text className=" text-neutral-500 hidden small:block">
+                {" • "}
+              </Text>
+              <Text className=" text-neutral-500">
+                {employee.customer.phone}
+              </Text>
+              <Text className=" text-neutral-500 hidden small:block">
+                {" • "}
+              </Text>
+              <Text className=" text-neutral-500">
+                {amountSpent} /{" "}
+                {employee.spending_limit > 0
+                  ? formatAmount(
+                      employee.spending_limit,
+                      company.currency_code!
+                    )
+                  : "No limit"}{" "}
+                spent
+              </Text>
+            </div>
           </div>
         </div>
-        {canManage && (
+        {isViewerAdmin && (
           <div className="flex items-center justify-end gap-2">
             {isEditing ? (
               <>
@@ -240,14 +300,28 @@ const Employee = ({
               </>
             ) : (
               <>
-                {canMakeOwner && <TransferOwnershipPrompt employee={employee} />}
-                {canRemove && <RemoveEmployeePrompt employee={employee} />}
                 <Button
-                  variant="secondary"
-                  onClick={() => setIsEditing((prev) => !prev)}
+                  variant="transparent"
+                  onClick={() => onInviteUnder(employee)}
                 >
-                  Edit
+                  Invite under
                 </Button>
+                {canManage && (
+                  <>
+                    {canMakeOwner && (
+                      <TransferOwnershipPrompt employee={employee} />
+                    )}
+                    {canRemove && (
+                      <RemoveEmployeePrompt
+                        employee={employee}
+                        childrenDestination={childrenDestination}
+                      />
+                    )}
+                    <Button variant="secondary" onClick={startEditing}>
+                      Edit
+                    </Button>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -255,9 +329,9 @@ const Employee = ({
       </div>
       <form
         className={clx(
-          "bg-neutral-50 grid grid-cols-2 gap-4 border-b border-neutral-200 transition-all duration-300 ease-in-out",
+          "bg-neutral-50 grid small:grid-cols-3 grid-cols-1 gap-4 border-b border-neutral-200 transition-all duration-300 ease-in-out",
           {
-            "max-h-[98px] opacity-100 p-4": isEditing,
+            "max-h-[260px] small:max-h-[98px] opacity-100 p-4": isEditing,
             "max-h-0 h-0 opacity-0 border-b-0": !isEditing,
           }
         )}
@@ -302,6 +376,18 @@ const Employee = ({
             <option value="true">Admin</option>
             <option value="false">Employee</option>
           </NativeSelect>
+        </div>
+        <div className="flex flex-col gap-y-2">
+          <Text className=" text-neutral-950 font-medium">Place under</Text>
+          <PlaceUnderSelect
+            className="bg-white"
+            employees={employees}
+            excludeEmployeeId={employee.id}
+            value={employeeData.parent_employee_id}
+            onChange={(parent_employee_id) =>
+              setEmployeeData({ ...employeeData, parent_employee_id })
+            }
+          />
         </div>
       </form>
     </div>
