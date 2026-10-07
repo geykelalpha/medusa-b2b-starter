@@ -9,6 +9,7 @@ import {
   createEmployeesStep,
   setAdminRoleStep,
   validateCustomerCanJoinCompanyStep,
+  validateEmployeeParentStep,
 } from "../steps";
 import { addEmployeeToCustomerGroupStep } from "../steps/add-employee-to-customer-group";
 
@@ -21,6 +22,11 @@ export const createEmployeesWorkflow = createWorkflow(
   "create-employees",
   function (input: WorkflowInput): WorkflowResponse<ModuleEmployee> {
     validateCustomerCanJoinCompanyStep({ customer_id: input.customerId });
+
+    validateEmployeeParentStep({
+      company_id: input.employeeData.company_id,
+      parent_employee_id: input.employeeData.parent_employee_id,
+    });
 
     const employee = createEmployeesStep(input.employeeData);
 

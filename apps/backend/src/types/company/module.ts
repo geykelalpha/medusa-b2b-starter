@@ -61,6 +61,7 @@ export interface ModuleEmployee {
   is_admin: boolean;
   is_owner: boolean;
   company_id: string;
+  parent_employee_id: string | null;
   created_at: Date;
   updated_at: Date;
   customer: CustomerDTO;
@@ -73,6 +74,7 @@ export type ModuleCreateEmployee = {
   is_admin: boolean;
   company_id: string;
   is_owner?: boolean;
+  parent_employee_id?: string | null;
 };
 
 export interface ModuleUpdateEmployee extends Partial<ModuleEmployee> {
@@ -101,6 +103,7 @@ export interface ModuleEmployeeInvite {
   accepted_at: Date | null;
   invited_by: string | null;
   employee_id: string | null;
+  parent_employee_id: string | null;
   company_id: string;
   created_at: Date;
   updated_at: Date;
@@ -118,6 +121,7 @@ export type ModuleCreateEmployeeInvite = {
   token_hash: string;
   expires_at: Date;
   invited_by?: string | null;
+  parent_employee_id?: string | null;
 };
 
 export interface ModuleUpdateEmployeeInvite

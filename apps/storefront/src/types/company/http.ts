@@ -47,6 +47,7 @@ export type StoreUpdateEmployee = {
   company_id: string
   spending_limit?: number
   is_admin?: boolean
+  parent_employee_id?: string | null
 }
 
 export type StoreEmployeeInviteResponse = {
@@ -64,6 +65,7 @@ export type StoreCreateEmployeeInvite = {
   phone?: string | null
   spending_limit?: number
   is_admin?: boolean
+  parent_employee_id?: string | null
 }
 
 export type StoreEmployeeInvitePreview = {

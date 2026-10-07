@@ -43,7 +43,7 @@ export const POST = async (
   res: MedusaResponse
 ) => {
   const { id, employeeId } = req.params;
-  const { spending_limit, is_admin } = req.validatedBody;
+  const { spending_limit, is_admin, parent_employee_id } = req.validatedBody;
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
 
   await updateEmployeesWorkflow.run({
@@ -52,6 +52,7 @@ export const POST = async (
       company_id: id,
       spending_limit,
       is_admin,
+      parent_employee_id,
       requested_by_customer_id: req.auth_context.actor_id,
     },
     container: req.scope,

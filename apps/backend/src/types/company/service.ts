@@ -31,6 +31,7 @@ export interface ModuleEmployeeFilters
   company_id?: string | string[];
   customer_id?: string | string[];
   is_owner?: boolean;
+  parent_employee_id?: string | string[] | null;
 }
 
 export interface ModuleEmployeeInviteFilters
@@ -40,6 +41,7 @@ export interface ModuleEmployeeInviteFilters
   email?: string | string[];
   token_hash?: string;
   status?: ModuleEmployeeInviteStatus | ModuleEmployeeInviteStatus[];
+  parent_employee_id?: string | string[] | null;
 }
 
 /**

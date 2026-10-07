@@ -11,6 +11,7 @@ export const employeeInviteFields = [
   "phone",
   "spending_limit",
   "is_admin",
+  "parent_employee_id",
   "status",
   "expires_at",
   "accepted_at",

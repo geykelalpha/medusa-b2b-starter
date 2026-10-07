@@ -11,6 +11,7 @@ import {
   removeAdminRoleStep,
   setAdminRoleStep,
   updateEmployeesStep,
+  validateEmployeeParentStep,
   validateEmployeeUpdateStep,
 } from "../steps";
 
@@ -28,6 +29,13 @@ export const updateEmployeesWorkflow = createWorkflow(
       company_id: input.company_id,
       is_admin: input.is_admin,
       requested_by_customer_id: input.requested_by_customer_id,
+    });
+
+    // Moving an employee in the tree is an update of its parent
+    validateEmployeeParentStep({
+      company_id: input.company_id,
+      employee_id: input.id,
+      parent_employee_id: input.parent_employee_id,
     });
 
     const employeeData = transform({ input }, ({ input }) => {

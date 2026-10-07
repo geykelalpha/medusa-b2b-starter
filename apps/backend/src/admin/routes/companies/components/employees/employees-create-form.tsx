@@ -10,17 +10,20 @@ import { useState } from "react";
 import { AdminCreateEmployeeInvite, QueryCompany } from "../../../../../types";
 import { CoolSwitch } from "../../../../components/common";
 import { currencySymbolMap } from "../../../../utils";
+import { EmployeeParentSelect } from "./employee-parent-select";
 
 export function EmployeesCreateForm({
   handleSubmit,
   loading,
   error,
   company,
+  defaultParentId = null,
 }: {
   handleSubmit: (data: AdminCreateEmployeeInvite) => Promise<void>;
   loading: boolean;
   error: Error | null;
   company: QueryCompany;
+  defaultParentId?: string | null;
 }) {
   const [formData, setFormData] = useState<
     Omit<AdminCreateEmployeeInvite, "spending_limit"> & {
@@ -30,6 +33,7 @@ export function EmployeesCreateForm({
     email: "",
     is_admin: false,
     spending_limit: "0",
+    parent_employee_id: defaultParentId,
   });
 
   const handleChange = (
@@ -110,6 +114,16 @@ export function EmployeesCreateForm({
               placeholder="0612345678"
             />
           </div>
+        </div>
+        <div className="flex flex-col gap-3">
+          <h2 className="h2-core">Placement</h2>
+          <EmployeeParentSelect
+            employees={company.employees ?? []}
+            value={formData.parent_employee_id ?? null}
+            onChange={(parent_employee_id) =>
+              setFormData({ ...formData, parent_employee_id })
+            }
+          />
         </div>
         <div className="flex flex-col gap-3">
           <h2 className="h2-core">Permissions</h2>

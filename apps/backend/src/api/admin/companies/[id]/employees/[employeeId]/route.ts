@@ -39,7 +39,7 @@ export const POST = async (
 ) => {
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
   const { id, employeeId } = req.params;
-  const { spending_limit, is_admin } = req.body;
+  const { spending_limit, is_admin, parent_employee_id } = req.body;
 
   await updateEmployeesWorkflow.run({
     input: {
@@ -47,6 +47,7 @@ export const POST = async (
       company_id: id,
       spending_limit,
       is_admin,
+      parent_employee_id,
     },
     container: req.scope,
   });

@@ -15,6 +15,15 @@ export const Employee = model
     company: model.belongsTo(() => Company, {
       mappedBy: "employees",
     }),
+    // Optional parent in the company's employee tree. Null means top level.
+    parent_employee: model
+      .belongsTo(() => Employee, {
+        mappedBy: "child_employees",
+      })
+      .nullable(),
+    child_employees: model.hasMany(() => Employee, {
+      mappedBy: "parent_employee",
+    }),
   })
   .indexes([
     {

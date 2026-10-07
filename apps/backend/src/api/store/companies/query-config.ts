@@ -33,6 +33,7 @@ export const storeEmployeeFields = [
   "id",
   "spending_limit",
   "is_admin",
+  "parent_employee_id",
   "is_owner",
   "customer_id",
   "*customer",

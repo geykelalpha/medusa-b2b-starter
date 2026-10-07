@@ -123,43 +123,70 @@ export const updateCompany = async (data: StoreUpdateCompany) => {
   return company
 }
 
-export const updateEmployee = async (data: StoreUpdateEmployee) => {
+/**
+ * Updates an employee's spending limit, role or place in the tree.
+ * Returns `{ error }` instead of throwing so the message reaches the client.
+ */
+export const updateEmployee = async (
+  data: StoreUpdateEmployee
+): Promise<{ error: string | null }> => {
   const { id, company_id, ...employeeData } = data
 
   const headers = {
     ...(await getAuthHeaders()),
   }
 
-  const employee = await sdk.client.fetch<StoreEmployeeResponse>(
-    `/store/companies/${company_id}/employees/${id}`,
-    {
-      method: "POST",
-      body: employeeData,
-      headers,
-    }
-  )
+  try {
+    await sdk.client.fetch<StoreEmployeeResponse>(
+      `/store/companies/${company_id}/employees/${id}`,
+      {
+        method: "POST",
+        body: employeeData,
+        headers,
+      }
+    )
+  } catch (error: any) {
+    return { error: error?.message || "Could not update the employee" }
+  }
 
   const cacheTag = await getCacheTag("companies")
   revalidateTag(cacheTag)
 
-  return employee
+  return { error: null }
 }
 
-export const deleteEmployee = async (companyId: string, employeeId: string) => {
+/**
+ * Removes an employee. Everyone under them moves up a level, along with
+ * pending invites, so both caches are revalidated.
+ */
+export const deleteEmployee = async (
+  companyId: string,
+  employeeId: string
+): Promise<{ error: string | null }> => {
   const headers = {
     ...(await getAuthHeaders()),
   }
 
-  await sdk.client.fetch(
-    `/store/companies/${companyId}/employees/${employeeId}`,
-    {
-      method: "DELETE",
-      headers,
-    }
-  )
+  try {
+    await sdk.client.fetch(
+      `/store/companies/${companyId}/employees/${employeeId}`,
+      {
+        method: "DELETE",
+        headers,
+      }
+    )
+  } catch (error: any) {
+    return { error: error?.message || "Could not remove the employee" }
+  }
 
-  const cacheTag = await getCacheTag("companies")
-  revalidateTag(cacheTag)
+  const [companiesCacheTag, invitesCacheTag] = await Promise.all([
+    getCacheTag("companies"),
+    getCacheTag("invites"),
+  ])
+  revalidateTag(companiesCacheTag)
+  revalidateTag(invitesCacheTag)
+
+  return { error: null }
 }
 
 /**

@@ -16,6 +16,7 @@ import {
 import { sdk } from "../../lib/client";
 import { queryKeysFactory } from "../../lib/query-key-factory";
 import { companyQueryKey } from "./companies";
+import { employeeInviteQueryKey } from "./employee-invites";
 
 export const employeeQueryKey = queryKeysFactory("employee");
 
@@ -118,6 +119,9 @@ export const useUpdateEmployee = (
       queryClient.invalidateQueries({
         queryKey: employeeQueryKey.list(companyId),
       });
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKey.detail(companyId),
+      });
       options?.onSuccess?.(data, variables, context);
     },
     ...options,
@@ -141,6 +145,13 @@ export const useDeleteEmployee = (
     onSuccess: (data: any, variables: any, context: any) => {
       queryClient.invalidateQueries({
         queryKey: employeeQueryKey.list(companyId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: companyQueryKey.detail(companyId),
+      });
+      // Pending invites under the removed employee move up a level
+      queryClient.invalidateQueries({
+        queryKey: employeeInviteQueryKey.lists(),
       });
       options?.onSuccess?.(data, variables, context);
     },

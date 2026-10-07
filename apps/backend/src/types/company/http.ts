@@ -52,6 +52,7 @@ export type AdminCreateEmployee = {
   is_admin: boolean;
   company_id: string;
   customer_id: string;
+  parent_employee_id?: string | null;
 };
 
 export type AdminUpdateEmployee = Partial<AdminCreateEmployee>;
@@ -73,6 +74,7 @@ export type AdminCreateEmployeeInvite = {
   phone?: string | null;
   spending_limit?: number;
   is_admin?: boolean;
+  parent_employee_id?: string | null;
 };
 
 /* Store */
@@ -141,6 +143,7 @@ export type StoreUpdateEmployee = {
   spending_limit: number;
   is_admin: boolean;
   company_id: string;
+  parent_employee_id?: string | null;
 };
 
 /* Employee Invite */
